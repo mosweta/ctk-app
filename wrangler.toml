@@ -1,0 +1,7 @@
+name = "ctkemba"
+type = "javascript" # or "webpack" if using bundler
+compatibility_date = "2025-11-23"
+
+[site]
+bucket = "./dist"
+entry-point = "workers-site"
