@@ -78,8 +78,8 @@ const Livestream = () => {
                 width: '100%',
                 height: '100%',
                 border: 'none'
-              }}
-              src="https://www.youtube.com/embed/live_stream?channel=YOUR_CHANNEL"
+              }} 
+              src="https://www.youtube.com/embed/Lch5tUvXgaE?si=o70YPU9DSGcuWW80"
               title="CTK Livestream"
               allowFullScreen
             />

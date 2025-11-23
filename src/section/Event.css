@@ -15,11 +15,15 @@
 
 }
 
-.photo-slider {
-  display: flex;
+.slider-container {
   overflow: hidden;
   width: 100%;
-  animation: slide 30s linear infinite; /* Slow horizontal sliding, adjust duration as needed */
+}
+
+.photo-slider {
+  display: flex;
+  width: max-content;
+  animation: slide 25s linear infinite;
 }
 
 .photo-item {
