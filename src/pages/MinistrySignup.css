@@ -1,0 +1,93 @@
+.ministry-signup-page {
+  width: 100%;
+}
+
+.signup-header {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.header-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+}
+
+.header-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.header-content h1 {
+  margin: 0;
+  font-weight: 700; /* slightly less bold */
+}
+
+.header-content h1 {
+  font-size: clamp(1.8rem, 4.5vw, 3.4rem);
+  letter-spacing: 0.5px;
+}
+
+.signup-list {
+  max-width: 980px;
+  margin: 1.25rem auto;
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.signup-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  padding: 1rem 1.25rem;
+}
+
+.card-title {
+  margin: 0 0 0.5rem 0;
+}
+
+.signup-form {
+  display: grid;
+  gap: 0.6rem;
+  max-width: 680px;
+}
+
+.signup-form input {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+}
+
+.form-actions { margin-top: 0.6rem; }
+
+.btn-submit {
+  background: #11693e;
+  color: white;
+  padding: 0.65rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 180ms ease-in-out;
+  font-size: 1rem;
+  min-width: 120px;
+}
+
+.btn-submit:hover {
+  background: #0f5f37;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(15,95,55,0.12);
+  filter: hue-rotate(6deg) saturate(1.06) brightness(1.02);
+}
+
+@media (max-width: 640px) {
+  .signup-list { padding: 0.5rem; }
+}

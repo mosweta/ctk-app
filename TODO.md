@@ -1,0 +1,8 @@
+- [x] Update .nav-menu button:hover color to #800000 in desktop media query
+- [x] Update .nav-item:hover color to #800000
+- [x] Update .dropdown-menu button:hover color to #800000
+- [x] Add color: #800000 to .nav-menu button:hover for mobile
+- [ ] Create GetInvolved.jsx page with main heading "Get Involved", subheading "List of Jumuiya and Groups" with numbered list of 29 Jumuiya, and subheading "Jumuiyas, Groups and Choirs" with sub-subheading "Ecclesial Groups" under Groups
+- [ ] Create GetInvolved.css for styling the page
+- [ ] Update App.jsx to add route for /get-involved
+- [ ] Update Header.jsx to change "Get Involved" button to navigate to /get-involved instead of scrolling to section

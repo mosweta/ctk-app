@@ -1,0 +1,84 @@
+.ministry-section {
+  position: relative;
+  width: 100%;
+  min-height: 60vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.ministry-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+}
+
+.ministry-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 900px;
+  padding: 2rem;
+}
+
+.ministry-title {
+  font-size:  clamp(2rem, 4vw, 3rem);
+  margin: 0 0 0.5rem 0;
+  font-weight: 450; 
+}
+
+.ministry-sub {
+  margin: 0 0 1.25rem 0;
+  font-weight: 300; 
+  opacity: 0.98;
+  font-size:  clamp(0.95rem, 2vw, 1.05rem);
+}
+
+.ministry-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.btn {
+  padding: 0.65rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  border: none;
+  transition: all 180ms ease-in-out;
+  min-width: 120px;
+}
+
+.btn.primary {
+  background: #1a8a4b;
+  color: white;
+}
+
+.btn.primary:hover {
+  background: #166f45; /* slightly darker */
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(22,111,69,0.12);
+  filter: hue-rotate(6deg) saturate(1.06) brightness(1.02);
+}
+
+.btn.outline {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.85);
+}
+
+.btn.outline:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,1);
+  transform: translateY(-3px);
+  filter: hue-rotate(6deg) saturate(1.06) brightness(1.02);
+}
+
+@media (max-width: 640px) {
+  .ministry-buttons { flex-direction: column; }
+}

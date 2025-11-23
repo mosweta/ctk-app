@@ -1,0 +1,57 @@
+.ministry-readmore { width: 100%; }
+
+.readmore-header {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.readmore-header .header-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.45); }
+.readmore-header .header-content { position: relative; z-index: 2; text-align: center; }
+
+.readmore-content { max-width: 900px; margin: 1.25rem auto; padding: 1rem; }
+.readmore-content section { margin-bottom: 1rem; }
+
+.readmore-content h2 {
+  font-size: clamp(1.2rem, 2.6vw, 1.5rem);
+  margin-bottom: 0.35rem;
+  display: inline-block;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.readmore-content h2::after {
+  content: "";
+  position: absolute;
+  left: -20px;
+  right: -20px;
+  bottom: 0;
+  height: 3px;
+  background: rgba(17,105,62,0.85);
+  border-radius: 2px;
+  z-index: -1;
+}
+
+.readmore-actions { margin-top: 1.25rem; text-align: center; }
+.btn-go {
+  background: #11693e;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 180ms ease-in-out;
+}
+
+.btn-go:hover {
+  background: #0f5f37;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(15,95,55,0.12);
+  filter: hue-rotate(6deg) saturate(1.06) brightness(1.02);
+}

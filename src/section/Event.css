@@ -1,0 +1,94 @@
+/* event.css */
+.upcoming-events {
+  background-color: rgb(217, 248, 217); 
+  padding: 20px;
+  color: white;
+}
+
+.upcoming-events h2 {
+  text-align: center;
+  color: #800000;
+  text-decoration: underline;
+  margin-bottom: 25px;
+  font-size: large;
+   font-size: clamp(1.5rem, 2.5vw, 3rem);
+
+}
+
+.photo-slider {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  animation: slide 30s linear infinite; /* Slow horizontal sliding, adjust duration as needed */
+}
+
+.photo-item {
+  flex-shrink: 0;
+  width: 300px; /* Adjust width based on your image sizes */
+  margin-right: 20px;
+  position: relative;
+}
+
+.date-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  color: rgb(5, 74, 20);
+  padding: 5px;
+  text-align: center;
+  font-weight: bold;
+  z-index: 1;
+  height: 50%; /* Height to be 50% */
+}
+
+.photo-item img {
+  width: 100%;
+  height: 300px;
+  display: block;
+  object-fit: cover;
+}
+
+.about-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background for about */
+  color: white;
+  padding: 5px;
+  text-align: center;
+  font-size: 12px;
+  z-index: 1;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%); /* Moves by half the width since we duplicated the array */
+  }
+}
+
+/* Media queries for mobile responsiveness */
+@media (max-width: 767px) {
+  .upcoming-events {
+    padding: 10px;
+  }
+
+  .upcoming-events h2 {
+    font-size: medium;
+    margin-bottom: 15px;
+  }
+
+  .photo-item {
+    width: 107px;
+    margin-right: 10px;
+    height: auto;
+  }
+
+  .photo-item img {
+    height: 180px;
+  }
+}
