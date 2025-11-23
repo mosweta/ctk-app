@@ -75,7 +75,9 @@ const ContactForm = () => {
         <div className="phone details" id ='phonedet'>
           <i classn="fas fa-phone-alt"></i>
           <div className="topic">Phone</div>
-          <div className="text-one">0202495785</div>
+          <a href="tel:0202495785" className="text-one">
+  0202495785
+</a>
         </div>
 
         <div className="email details" id ='emaildet'>
