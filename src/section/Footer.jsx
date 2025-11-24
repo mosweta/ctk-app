@@ -66,8 +66,10 @@ const Footer = () => {
             <h3 style={{ fontSize: 'clamp(1.5rem, 2.5vw, 3rem)', fontWeight: 'bold',color:'#742020dc' }}>Our Parish</h3>
             <p>Nairobi, Kenya</p>
             <p>Embakasi</p>
-            <p>Phone: 0724515543</p>
-            <p>Email: Christtheking@gmail.com</p>
+            <a href="tel:0202495785" className="text-one">
+              0202495785
+            </a>
+            <p>Email: ctkcatholicparishemba@gmail.com</p>
             <div className="social-icons" style={{ display: 'flex', gap: '15px', marginTop: '25px' }}>
               <motion.div whileHover={{ scale: 1.1 }}>
                 <FaFacebook size={24} style={{ color: 'white', cursor: 'pointer' }} />
