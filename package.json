@@ -4,8 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && npm run copy-routes",
+    "copy-routes": "copy _routes.json dist\\_routes.json",
     "lint": "eslint .",
     "preview": "vite preview"
   },

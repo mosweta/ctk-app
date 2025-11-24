@@ -1,6 +1,9 @@
-
-name = 'christthekingembakasi'
+name = "christthekingembakasi"
 compatibility_date = "2025-11-23"
 
 [assets]
-  directory = "./dist"
+directory = "./dist"
+
+[[routes]]
+pattern = "christthekingembakasi.top/*"
+zone_name = "christthekingembakasi.top"
