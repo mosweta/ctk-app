@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaFacebook, FaInstagram, FaWhatsapp, FaTwitter, FaTiktok } from 'react-icons/fa'
-import logo from '../assets/logo.png'
+import logo from '../assets/logoctk.png'
 import viteLogo from '/vite.svg' // Assuming logo is vite.svg, adjust if needed
 
 const Footer = () => {
@@ -60,7 +60,7 @@ const Footer = () => {
       <footer style={{ backgroundColor: '#46684d', color: 'white', padding: '20px' }} className="footer-padding">
         <div className="footer-container">
           <div className="footer-logo">
-            <img src={logo} alt="Logo" style={{ width: '50px', height: '50px' }} />
+            <img src={logo} alt="Logo" style={{ width: '80px', height: '80px' }} />
           </div>
           <div className="footer-section">
             <h3 style={{ fontSize: 'clamp(1.5rem, 2.5vw, 3rem)', fontWeight: 'bold',color:'#742020dc' }}>Our Parish</h3>
