@@ -466,7 +466,7 @@ const Header = () => {
               </div>
 
               <div className="sidebar-footer">
-                <p className="sidebar-footer-text">© 2024 Christ the King</p>
+                <p className="sidebar-footer-text">© 2026 Christ the King</p>
                 <p className="sidebar-footer-text">All rights reserved</p>
               </div>
             </motion.div>
