@@ -65,28 +65,28 @@ const GetInvolved = () => {
   ]
 
   const ecclesialGroups = [
-    'PMC CTK and SJTE',
-    'MYM CTK and SJTE',
-    'Youth CTK and SJTE',
-    'YCA CTK AND SJTE',
-    'CMA CTK and SJTE',
-    'CWA CTK and SJTE',
+    'PMC',
+    'MYM',
+    'Youth',
+    'YCA',
+    'CMA',
+    'CWA',
     'Couples for Christ',
     'Charismatic',
     'Divine Mercy',
     'Sacred Heart',
-    'Christ the king self help group',
-    'SDP-social Development program',
-    'CJPD-catholic Justice and Peace Department'
+    'Christ the King Self Help Group',
+    'SDP-Social Development Program',
+    'CJPD-Catholic Justice and Peace Department'
   ]
 
   const choirList = [
-    'St Cecilia Choir',
-    'St Gregory the Great Choir',
-    'St Dominic Savio',
+    'St. Cecilia Choir',
+    'St. Gregory the Great Choir',
+    'St. Dominic Savio',
     'St. Kizito',
     'YSC choir',
-    'St Augustine'
+    'St. Augustine'
   ]
 
   return (
