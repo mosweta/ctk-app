@@ -12,6 +12,7 @@ import secretary from '../assets/secretary.jpg'
 import catechist1 from '../assets/catechistm.png'
 import catechist2 from '../assets/catechistf.png'
 import bgImage from '../assets/bg1.jpeg'
+import accountant from '../assets/accountant.jpg'
 
 const Staff = () => {
   const staffMembers = [
@@ -38,6 +39,12 @@ const Staff = () => {
       name: 'Ms. Mary Williams',
       description: 'Manages administrative tasks and coordinates church events.',
       image: secretary
+    },
+    {
+      title: 'Accountant',
+      name: 'Mr. James Wilson',
+      description: 'Manages financial records and oversees budgeting for the church.',
+      image: accountant
     },
     {
       title: 'Catechist',
