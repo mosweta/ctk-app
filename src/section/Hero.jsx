@@ -4,8 +4,8 @@ import './Hero.css';
 import { FiChevronLeft, FiChevronRight, FiPlay, FiCalendar } from 'react-icons/fi';
 
 // Import your images
-import heroImage1 from '../assets/church.jpg';
-import heroImage2 from '../assets/pxfuel.jpg';
+import heroImage1 from '../assets/church5.jpg';
+import heroImage2 from '../assets/bishops.jpg';
 import heroImage3 from '../assets/cma.jpg';
 import heroImage4 from '../assets/Groto.jpg';
 
