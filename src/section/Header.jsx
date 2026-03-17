@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../assets/logoctk.png';
-import './header.css';
+import './Header.css';
 import { 
   Home, 
   Users, 
