@@ -9,7 +9,7 @@
   background-color: #1a1a1a;
 }
 
-/* Background Slider */
+/* Background Slider - Improved image handling */
 .hero-background {
   position: absolute;
   top: 0;
@@ -17,34 +17,48 @@
   width: 100%;
   height: 100%;
   z-index: 1;
+  overflow: hidden;
 }
 
 .hero-image {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  max-width: none;
   object-fit: cover;
   object-position: center;
-  display: block;
 }
 
-/* Different image positioning for different screen sizes */
-@media (max-width: 768px) {
+/* Handle different image aspect ratios */
+@media (max-aspect-ratio: 1/1) {
+  /* For images that are more tall than wide (portrait) */
   .hero-image {
-    object-position: center; /* Keep centered on mobile */
+    object-fit: cover;
+    width: 100%;
+    height: auto;
   }
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
+@media (min-aspect-ratio: 16/9) {
+  /* For very wide images */
   .hero-image {
-    object-position: center;
+    object-fit: cover;
+    width: 100%;
+    height: auto;
   }
 }
 
-/* For very wide screens */
-@media (min-width: 1920px) {
+@media (max-aspect-ratio: 4/3) and (min-aspect-ratio: 1/1) {
+  /* For standard images (square to 4:3) */
   .hero-image {
-    object-fit: contain; /* Show full image on ultra-wide */
-    background-color: #1a1a1a;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
   }
 }
 
@@ -340,6 +354,26 @@
   }
 }
 
+/* Mobile Portrait & Landscape Optimizations */
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 100vh;
+    height: -webkit-fill-available; /* Better mobile height handling */
+  }
+  
+  .hero-content {
+    max-width: 90%;
+    padding: 1.2rem;
+  }
+  
+  /* Better image handling for mobile */
+  .hero-image {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
+}
+
 /* Mobile Landscape */
 @media (max-height: 600px) and (orientation: landscape) {
   .hero-section {
@@ -369,6 +403,13 @@
   
   .hero-subtitle {
     margin-bottom: 0.3rem;
+  }
+  
+  /* Adjust image for landscape */
+  .hero-image {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
   }
 }
 
