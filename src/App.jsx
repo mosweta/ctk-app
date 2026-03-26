@@ -20,6 +20,7 @@ import Calendar from './pages/Calendar'
 import GetInvolved from './pages/GetInvolved'
 //import ContactUs from './pages/ContactUs'
 import ContactForm from './pages/Contactform'
+import Announcements from './pages/Announcements'
 
 const Home = () => (
   <>
@@ -50,6 +51,7 @@ const App = () => {
         <Route path="/confession-time" element={<ConfessionTime />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/get-involved" element={<GetInvolved />} />
+        <Route path="/announcements" element={<Announcements />} />
       </Routes>
     </BrowserRouter>
   )
