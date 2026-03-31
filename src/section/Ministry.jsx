@@ -29,7 +29,7 @@ const Ministry = () => {
         <h4 className="ministry-sub">Serving our community through faith and action</h4>
         <div className="ministry-buttons">
           
-          <button className="btn outline" onClick={() => navigate('/ministry/readmore')}>Read More</button>
+          <button className="btn outline" onClick={() => navigate('/readmore')}>Read More</button>
         </div>
       </motion.div>
     </motion.section>

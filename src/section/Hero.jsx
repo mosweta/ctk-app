@@ -21,8 +21,8 @@ const Hero = () => {
       title: "Welcome to Christ the King",
       subtitle: "A Eucharistic Community",
       description: "A community striving for holiness through a rich sacramental life and serving God in our daily lives.",
-      ctaPrimary: { text: "Join Us This Sunday", link: "/liturgy/mass-times" },
-      ctaSecondary: { text: "About Us", link: "/about/history" }
+      ctaPrimary: { text: "Join Us This Sunday", link: "/mass-times" },
+      ctaSecondary: { text: "About Us", link: "/history" }
     },
     {
       id: 2,
@@ -30,8 +30,8 @@ const Hero = () => {
       title: "Experience God's Presence",
       subtitle: "Daily Mass & Adoration",
       description: "Deepen your faith through daily Eucharist, confession, and perpetual adoration.",
-      ctaPrimary: { text: "Mass Schedule", link: "/liturgy/mass-times" },
-      ctaSecondary: { text: "Adoration Times", link: "/liturgy/adoration" }
+      ctaPrimary: { text: "Mass Schedule", link: "/mass-times" },
+      ctaSecondary: { text: "Adoration Times", link: "/adoration" }
     },
     {
       id: 3,
@@ -39,7 +39,7 @@ const Hero = () => {
       title: "Growing Together in Faith",
       subtitle: "Community & Fellowship",
       description: "Join our vibrant community with programs for children, youth, and adults.",
-      ctaPrimary: { text: "Our Ministries", link: "/ministry/readmore" },
+      ctaPrimary: { text: "Our Ministries", link: "/readmore" },
       ctaSecondary: { text: "Get Involved", link: "/get-involved" }
     },
     {
@@ -48,8 +48,8 @@ const Hero = () => {
       title: "Prepare Your Heart",
       subtitle: "Season of Lent",
       description: "Join us for special Lenten services, confessions, and Easter celebrations.",
-      ctaPrimary: { text: "Announcements", link: "/events/announcements" },
-      ctaSecondary: { text: "Confession Times", link: "/liturgy/confession" }
+      ctaPrimary: { text: "Announcements", link: "/announcements" },
+      ctaSecondary: { text: "Confession Times", link: "/confession" }
     }
   ];
 

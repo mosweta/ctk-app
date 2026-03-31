@@ -20,11 +20,11 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const quickLinks = [
-    { name: 'Mass Times', path: '/liturgy/mass-times' },
-    { name: 'Announcements', path: '/events/announcements' },
-    { name: 'Contact Us', path: '/about/contact' },
-    { name: 'Photo Album', path: '/about/gallery' },
-    { name: 'Events Calendar', path: '/events/calendar' }
+    { name: 'Mass Times', path: '/mass-times' },
+    { name: 'Announcements', path: '/announcements' },
+    { name: 'Contact Us', path: '/contact' },
+    { name: 'Photo Album', path: '/gallery' },
+    { name: 'Events Calendar', path: '/calendar' }
   ];
 
   const socialLinks = [

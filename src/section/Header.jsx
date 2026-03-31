@@ -87,28 +87,28 @@ const Header = () => {
       icon: <Users />,
       dropdown: [
         { title: 'Staff', path: '/staff', icon: <User /> },
-        { title: 'Photo Album', path: '/about/gallery', icon: <Image /> },
-        { title: 'Contact Us', path: '/about/contact', icon: <Mail /> },
-        { title: 'History', path: '/about/history', icon: <Crown /> }
+        { title: 'Photo Album', path: '/gallery', icon: <Image /> },
+        { title: 'Contact Us', path: '/contact', icon: <Mail /> },
+        { title: 'History', path: '/history', icon: <Crown /> }
       ]
     },
     liturgy: {
       title: 'Liturgy',
       icon: <Cross />,
       dropdown: [
-        { title: 'Sacraments', path: '/liturgy/sacrament', icon: <Heart /> },
-        { title: 'Mass Times', path: '/liturgy/mass-times', icon: <Clock /> },
+        { title: 'Sacraments', path: '/sacrament', icon: <Heart /> },
+        { title: 'Mass Times', path: '/mass-times', icon: <Clock /> },
         
-        { title: 'Confession Time', path: '/liturgy/confession', icon: <Cross /> },
-        { title: 'Adoration Time', path: '/liturgy/adoration', icon: <Heart /> }
+        { title: 'Confession Time', path: '/confession', icon: <Cross /> },
+        { title: 'Adoration Time', path: '/adoration', icon: <Heart /> }
       ]
     },
     events: {
       title: 'Events & News',
       icon: <Calendar />,
       dropdown: [
-        { title: 'Calendar', path: '/events/calendar', icon: <Calendar /> },
-        { title: 'Announcement', path: '/events/announcements', icon: <Bell /> }
+        { title: 'Calendar', path: '/calendar', icon: <Calendar /> },
+        { title: 'Announcement', path: '/announcements', icon: <Bell /> }
       ]
     }
   };

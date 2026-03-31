@@ -69,32 +69,32 @@ const App = () => {
           <Route index element={<Home />} />
 
           {/* ---------------- ABOUT ---------------- */}
-          <Route path="about">
+          
             
             <Route path="gallery" element={<PhotoAlbum />} />
             <Route path="contact" element={<ContactUs />} />
             <Route path="history" element={<History />} />
-          </Route>
+          
 
           {/* ---------------- LITURGY ---------------- */}
-          <Route path="liturgy">
+          
             <Route path="mass-times" element={<MassTime />} />
             <Route path="adoration" element={<AdorationTime />} />
             <Route path="confession" element={<ConfessionTime />} />
             <Route path='sacrament' element= {<Sacraments/>}/>
-          </Route>
+          
 
           {/* ---------------- EVENTS ---------------- */}
-          <Route path="events">
+          
             <Route path="calendar" element={<Calendar />} />
             <Route path="announcements" element={<Announcements />} />
-          </Route>
+          
 
           {/* ---------------- MINISTRY ---------------- */}
-          <Route path="ministry">
+          
             <Route path="readmore" element={<MinistryReadMore />} />
             <Route path="signup" element={<MinistrySignup />} />
-          </Route>
+          
 
           {/* ---------------- GENERAL ---------------- */}
           <Route path="get-involved" element={<GetInvolved />} />
