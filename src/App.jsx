@@ -70,7 +70,7 @@ const App = () => {
 
           {/* ---------------- ABOUT ---------------- */}
           <Route path="about">
-            <Route path="staff" element={<Staff />} />
+            
             <Route path="gallery" element={<PhotoAlbum />} />
             <Route path="contact" element={<ContactUs />} />
             <Route path="history" element={<History />} />
@@ -99,6 +99,7 @@ const App = () => {
           {/* ---------------- GENERAL ---------------- */}
           <Route path="get-involved" element={<GetInvolved />} />
           <Route path="parish-registration" element={<ParishRegistration />} />
+          <Route path="staff" element={<Staff />} />
 
           {/* Optional future pages */}
           {/* <Route path="sacraments" element={<Sacraments />} /> */}
