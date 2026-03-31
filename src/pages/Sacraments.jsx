@@ -19,13 +19,13 @@ import {Cross} from 'lucide-react'
 import './Sacraments.css';
 
 // Import images (you'll need to add these images to your assets folder)
-import baptismImg from '../assets/sacraments/baptism.jpg';
-import eucharistImg from '../assets/sacraments/eucharist.jpg';
-import confirmationImg from '../assets/sacraments/confirmation.jpg';
-import confessionImg from '../assets/sacraments/confession.jpg';
-import anointingImg from '../assets/sacraments/anointing.jpg';
-import holyOrdersImg from '../assets/sacraments/holy-orders.jpg';
-import matrimonyImg from '../assets/sacraments/matrimony.jpg';
+import baptismImg from '../assets/Sacraments/baptism.jpg';
+import eucharistImg from '../assets/Sacraments/eucharist.jpg';
+import confirmationImg from '../assets/Sacraments/confirmation.jpg';
+import confessionImg from '../assets/Sacraments/confession.jpg';
+import anointingImg from '../assets/Sacraments/anointing.jpg';
+import holyOrdersImg from '../assets/Sacraments/holy-orders.jpg';
+import matrimonyImg from '../assets/Sacraments/matrimony.jpg';
 
 const Sacraments = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
