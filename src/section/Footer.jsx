@@ -24,7 +24,7 @@ const Footer = () => {
     { name: 'Announcements', path: '/events/announcements' },
     { name: 'Contact Us', path: '/about/contact' },
     { name: 'Photo Album', path: '/about/gallery' },
-    { name: 'Events Calendar', path: '/about/contact' }
+    { name: 'Events Calendar', path: '/events/calendar' }
   ];
 
   const socialLinks = [
@@ -164,8 +164,8 @@ const Footer = () => {
               Mass Hours
             </h4>
             <p>Sunday: 7:00 AM - 1:00 PM</p>
-            <p>Weekdays: 7:00 AM</p>
-            <p>Saturday Vigil: 5:00 PM</p>
+            <p>Monday-Saturday: 7:00 AM</p>
+            
           </motion.div>
         </motion.div>
 
