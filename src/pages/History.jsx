@@ -20,7 +20,7 @@ import ctkSideImg from '../assets/church2.jpg';
 import ctkBuildingImg from '../assets/Groto.jpg';
 import ctkMassImg from '../assets/bishops.jpg';
 import groto from '../assets/Groto.jpg';
-import sjtePlaceholderImg from '../assets/history/sjte.jpeg';
+import sjtePlaceholderImg from '../assets/history/Sjte.jpeg';
 
 const History = () => {
   const [activeTab, setActiveTab] = useState('ctk'); // 'ctk' or 'sjte'
