@@ -56,8 +56,8 @@ const Sacraments = () => {
         "Child's birth certificate",
         "Letter of consent from the parish of residence"
       ],
-      contact: "Fr. Michael - 0722 123 456",
-      schedule: "Every 1st and 3rd Sunday at 10:00 AM",
+      contact: "Parish Office - 020 2495785",
+      schedule: "Easter Vigil or when announced",
       location: "Main Church",
       preparationTime: "3 months",
       color: "#4a90e2"
@@ -198,7 +198,7 @@ const Sacraments = () => {
         "Call from God and the Church"
       ],
       contact: "Parish Office - 020 2495785",
-      schedule: "Wednesday from 8:00 AM to 1:00 PM",
+      schedule: "Wednesday from 8:00 AM to 1:00 PM (Office day)",
       location: "CTK Parish Office(Priest's Office)",
       preparationTime: "7 years of formation",
       color: "#f39c12"
