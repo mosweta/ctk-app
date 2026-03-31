@@ -86,7 +86,7 @@ const Header = () => {
       title: 'About',
       icon: <Users />,
       dropdown: [
-        { title: 'Staff', path: '/about/staff', icon: <User /> },
+        { title: 'Staff', path: '/staff', icon: <User /> },
         { title: 'Photo Album', path: '/about/gallery', icon: <Image /> },
         { title: 'Contact Us', path: '/about/contact', icon: <Mail /> },
         { title: 'History', path: '/about/history', icon: <Crown /> }
