@@ -27,6 +27,7 @@ import GetInvolved from './pages/GetInvolved';
 import ContactUs from './pages/ContactUs';
 import Announcements from './pages/Announcements';
 import Sacraments from './pages/Sacraments';
+import History from './pages/History';
 
 // --------------------
 // Layout Wrapper
@@ -72,6 +73,7 @@ const App = () => {
             <Route path="staff" element={<Staff />} />
             <Route path="gallery" element={<PhotoAlbum />} />
             <Route path="contact" element={<ContactUs />} />
+            <Route path="history" element={<History />} />
           </Route>
 
           {/* ---------------- LITURGY ---------------- */}
