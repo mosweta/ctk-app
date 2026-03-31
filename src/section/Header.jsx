@@ -15,7 +15,8 @@ import {
   Clock,
   Heart,
   Bell,
-  User
+  User,
+  Crown
 } from 'lucide-react';
 import { FiX } from 'react-icons/fi';
 
@@ -87,7 +88,8 @@ const Header = () => {
       dropdown: [
         { title: 'Staff', path: '/about/staff', icon: <User /> },
         { title: 'Photo Album', path: '/about/gallery', icon: <Image /> },
-        { title: 'Contact Us', path: '/about/contact', icon: <Mail /> }
+        { title: 'Contact Us', path: '/about/contact', icon: <Mail /> },
+        { title: 'History', path: '/about/history', icon: <Crown /> }
       ]
     },
     liturgy: {
