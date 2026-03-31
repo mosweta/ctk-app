@@ -47,14 +47,17 @@ const Sacraments = () => {
         "Attend pre-baptism preparation classes",
         "Choose godparents who are practicing Catholics",
         "Present the child's birth certificate",
-        "Schedule the baptism date with the priest"
+        "Schedule the baptism date with the priest",
+        "Baptism is typically celebrated during the Easter Vigil or on Sundays during Mass",
+        "Baptism should be duly registered, and baptismal cards issued immediately",
+        "Names given at baptism should be chosen from saint names or those based on Christian virtues"
       ],
       requirements: [
         "At least one parent must be a practicing Catholic",
-        "Godparents must be confirmed Catholics over 16",
+        "Godparents must be confirmed Catholics over 16 leading a life in harmony with the faith and not the parent of the child",
         "Pre-baptism course completion certificate",
         "Child's birth certificate",
-        "Letter of consent from the parish of residence"
+        "For more information, contact the parish office or refer to the Archdiocese of Nairobi pastoral guidelines"
       ],
       contact: "Parish Office - 020 2495785",
       schedule: "Easter Vigil or when announced",
@@ -78,11 +81,12 @@ const Sacraments = () => {
         "Receive worthily and regularly"
       ],
       requirements: [
-        "Baptism certificate",
+        "Have a baptism card",
         "First Communion preparation course",
-        "Age 7 or older",
+        "Age 9 or older with not less than one and a half years of instruction and scrutiny before reception",
         "Regular Mass attendance",
-        "Proper understanding of the Eucharist"
+        "Proper understanding of the Eucharist",
+        "For more information, contact the parish office or refer to the Archdiocese of Nairobi pastoral guidelines"
       ],
       contact: "Parish Office - 020 2495785",
       schedule: "Daily: 7:00 AM | Sunday: 7:00 AM, 9:00 AM, 11:00 AM, 1:00 PM",
@@ -99,18 +103,19 @@ const Sacraments = () => {
       about: "Confirmation perfects Baptismal grace and gives us the Holy Spirit to make us stronger witnesses of Christ. Through the laying on of hands and anointing with chrism, we receive the seven gifts of the Holy Spirit and are strengthened to live out our faith boldly.",
       meaning: "By the sacrament of Confirmation, the baptized are more perfectly bound to the Church and are enriched with a special strength of the Holy Spirit. Hence they are, as true witnesses of Christ, more strictly obliged to spread and defend the faith by word and deed.",
       howTo: [
-        "Be at least 14 years of age",
+        "Be at least 10 years of age and at least 1 year of instruction",
         "Complete Confirmation preparation program",
-        "Choose a sponsor (practicing Catholic)",
+        "Choose a sponsor (practicing Catholic) who is present and commited to the faith.",
         "Attend regular classes and retreats",
-        "Choose a Confirmation name (saint's name)"
+        "Choose a Confirmation name (saint's name)",
+        "Administered at least once a year, usually on Pentecost Sunday or when announced by the parish by the local ordinary or his delegate.",
       ],
       requirements: [
-        "Baptism certificate",
-        "First Communion certificate",
-        "Sponsor's letter from their parish",
+        "Have a baptism card",
+        "Have done First Communion ",
         "Active participation in parish life",
-        "Completion of preparation program"
+        "Completion of preparation program",
+        "For more information, contact the parish office or refer to the Archdiocese of Nairobi pastoral guidelines"
       ],
       contact: "Parish Office - 020 2495785",
       schedule: "Classes: Saturdays at 3:00 PM",
@@ -134,11 +139,12 @@ const Sacraments = () => {
         "Receive absolution and pray the Act of Contrition"
       ],
       requirements: [
+        "Baptized catholic who receives the Holy communion or the first time prior to First Holy Communion",
         "Proper examination of conscience",
         "Sincere sorrow for sins",
         "Firm purpose of amendment",
-        "Confession at least once a year (obligatory)",
-        "Worthily receive Communion after confession"
+        "Worthily receive Communion after confession",
+        "For more information, contact the parish office or refer to the Archdiocese of Nairobi pastoral guidelines"
       ],
       contact: "Parish Office - 020 2495785",
       schedule: "Saturdays: 4:00 PM - 5:30 PM",
@@ -162,11 +168,16 @@ const Sacraments = () => {
         "Receive Holy Communion if possible"
       ],
       requirements: [
+        "Confered to baptized catholics who have requested for it or it has been requested on their behalf",
+        "The ordinary minister of the sacrament is a priest",
+        "The sacrament is not confered to those who persevere obstinately in manifest grave sins (live publicly scandalous lives)",
+        "Proper examination of conscience",
         "Serious illness or advanced age",
         "Before major surgery",
         "Reception while conscious and aware",
         "Can be repeated if condition worsens",
-        "Frequent reception not restricted to danger of death"
+        "Frequent reception not restricted to danger of death",
+        "For more information, contact the parish office or refer to the Archdiocese of Nairobi pastoral guidelines"
       ],
       contact: "Parish Office - 020 2495785",
       schedule: "Available anytime for emergencies",
@@ -186,21 +197,25 @@ const Sacraments = () => {
         "Discern your vocation through prayer and spiritual direction",
         "Contact the Vocations Director",
         "Complete application and undergo psychological evaluation",
-        "Enter seminary formation (4-7 years)",
+        "Enter seminary formation",
         "Receive ordination as deacon, then priest"
       ],
       requirements: [
         "Male, practicing Catholic",
         "Baptized and confirmed",
-        "Single or married (for permanent deacon)",
+        "Be recommended by parish priest",
+        "Should be physically, mentally and psychologically fit",
+        "Should voluntarily apply for admission through the vocation director's office",
+        "Must have attained the age of majority (18 years)",
         "Good moral character",
-        "Bachelor's degree (for priest)",
-        "Call from God and the Church"
+        "Should have obtained necessary academic qualifications",
+        "Call from God and the Church",
+        "For more information, contact the parish office or refer to the Archdiocese of Nairobi pastoral guidelines"
       ],
       contact: "Parish Office - 020 2495785",
       schedule: "Wednesday from 8:00 AM to 1:00 PM (Office day)",
       location: "CTK Parish Office(Priest's Office)",
-      preparationTime: "7 years of formation",
+      preparationTime: "8-11 years of formation",
       color: "#f39c12"
     },
     {
@@ -218,11 +233,13 @@ const Sacraments = () => {
         "Choose witnesses (best man and maid of honor)"
       ],
       requirements: [
+        "Have to be a man and woman who are legally capable",
         "Both parties must be free to marry",
-        "At least one party is a baptized Catholic",
+        "Couples intending to receive must be baptised catholics unless in mixed marriage",
         "No previous sacramental marriage",
         "Completion of marriage preparation",
-        "Baptism and Confirmation certificates"
+        "Baptism card, copy of birth certificate, duly filled prenuptial form, banns, copy of ID etc",
+        "For more information, contact the parish office or refer to the Archdiocese of Nairobi pastoral guidelines"
       ],
       contact: "Parish Office - 020 2495785",
       schedule: "Sunday classes at 3:00 PM | Weddings by appointment",
