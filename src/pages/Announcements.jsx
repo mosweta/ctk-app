@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../section/Header';
 import Footer from '../section/Footer';
-import './Announcements.css';
+import './announcements.css';
 import { 
   FiBell, 
   FiCalendar, 
