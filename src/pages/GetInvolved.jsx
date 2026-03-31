@@ -147,7 +147,11 @@ const GetInvolved = () => {
                 ))}
               </ol>
             </div>
+            
           </motion.section>
+          <div>
+              <p>To join any of these jumuiyas, groups or choirs, please contact the parish office.</p>
+            </div>
         </div>
       </main>
 
