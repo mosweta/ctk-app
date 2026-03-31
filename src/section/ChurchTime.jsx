@@ -58,7 +58,7 @@ const ChurchTime = ({ showOnly }) => {
   const times = {
     mass: [
       { day: 'Sunday', time: '7:00 AM, 9:00 AM, 11:00 AM, 1:00 PM' },
-      { day: 'Monday - Friday', time: '7:00 AM' }
+      { day: 'Monday - Saturday', time: '7:00 AM' }
     ],
     confession: [
       { day: 'Saturday', time: '4:00 PM - 5:30 PM' }
