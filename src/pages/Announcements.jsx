@@ -36,41 +36,33 @@ const Announcements = () => {
 
   // Announcement data based on your sample
   const announcementData = {
-    date: "SUNDAY 22ND MARCH 2026",
+    date: "SUNDAY 29TH MARCH 2026",
     sections: [
       {
         title: "TODAY'S ANNOUNCEMENTS",
         items: [
           {
             type: "text",
-            content: "Today is the 5th Sunday of Lent."
+            content: "Today is the Palm Sunday. "
           },
           {
             type: "text",
             content: "We thank all who have animated today's Mass:",
             subItems: [
-              "St. Peter and Paul SCC",
-              "St. Stephen SCC",
-              "Our Lady Queen of Peace SCC",
+              "St. Thomas of Aquinas SCC.",
+              "St. Teresa of Avila SCC",
+              "St. Teresa of Calcutta SCC",
               "St. Rita SCC",
               "God bless you all."
             ]
           },
           {
             type: "text",
-            content: "We shall have the 3rd scrutiny for the catechumens to be baptized during Easter. This will be during the 1pm Mass at CTK Church."
+            content: " There will be rehearsals for those who will take the readings for Easter Triduum at 3pm at CTK Church and at 12pm at SJTE church.  "
           },
           {
             type: "text",
-            content: "Today is our parish election day for the group leaders. We are requested to fully participate in it as per our schedules and venues."
-          },
-          {
-            type: "text",
-            content: "We congratulate all the newly elected jumuia leaders who were elected last Sunday and wish them God's blessings as they take this noble role in the church",
-            notes: [
-              "Until the commissioning and official handover is done, we urge the outgoing leaders to continue with their roles/duties.",
-              "Those who were elected and are not eligible, we shall have repeat of elections for their positions soon."
-            ]
+            content: "There will be election for the local church council after the 4th Mass in CTK Church. Those to do the election are the newly elected moderators, treasurers and secretaries of each jumuia and moderators of groups who were elected last Sunday. "
           }
         ]
       },
@@ -79,62 +71,55 @@ const Announcements = () => {
         items: [
           {
             type: "text",
-            content: "On Tuesday 24th March 2026 there will be Mass and adoration for all choirs at 7pm in both CTK Church, and at SJTE Church respectively."
-          },
-          {
-            type: "text",
-            content: "On Wednesday 25th March 2026 we shall have deanery confessions in preparation for Easter starting from 5pm-7pm in both CTK and SJTE churches."
-          },
-          {
-            type: "text",
-            content: "On Friday 27th March way of the Cross will be at 6:30pm followed by Mass in both CTK & SJTE churches. At CTK Mass will be animated by St. Jude SCC, and SJTE by St. Agatha SCC."
-          },
-          {
-            type: "subheading",
-            content: "On Saturday 28th March 2026:"
-          },
-          {
-            type: "list",
-            items: [
-              "There will be a charity day for:",
-              "• St. Michael SCC at St. Teresa Orphanage in Huruma.",
-              "• Our Lady of Mercy SCC at Nairobi West prison.",
-              "There will be recollection day for the following:",
-              "• Our Lady of Assumption SCC and Our Lady of Fatima SCC at Apostles of Jesus Seminary Chapel from 9am.",
-              "• St. Lawrence of Rome SCC at Subukia shrine.",
-              "There will be feast day Mass for YCA –CTK/SJTE members at 3pm at Wanandege Plaza."
-            ]
+            content: "We shall have Easter talk, confessions and Mass from tomorrow, Monday 29/3/2026 to Wednesday 1/4/2026 at CTK church from 7pm. Kindly note that we shall not have morning Masses this week, i.e., from Monday to Saturday."
           }
         ]
       },
       {
-        title: "NEXT SUNDAY'S ANNOUNCEMENTS – 29TH MARCH 2026",
+        title: "NEXT SUNDAY'S ANNOUNCEMENTS – 5TH APRIL 2026",
         items: [
           {
             type: "text",
-            content: "It will be the Palm Sunday. All Christians are requested to carry the Palms. In Tassia Masses will be as usual, but PMC will have only the 2nd Mass. CTK PMC Masses will be as usual."
+            content: "It will be the Easter Sunday."
           },
           {
             type: "text",
-            content: "We shall have elections for the parish/local church pastoral council leaders and leaders of ecclesial movements and associations."
+            content: " It shall be our 1st tithing Sunday for the month of April 2026. Please pick the tithe envelopes from our ushers or use the paybill number 653472, account name Tithe."
           },
+          
           {
             type: "text",
-            content: "We will have birthday blessing for those who have celebrated their birthdays in the month of March."
-          },
-          {
-            type: "text",
-            content: "There will be rehearsals for those who will take the readings for Easter Triduum at 3pm at CTK Church and at 12pm at SJTE church."
-          },
-          {
-            type: "text",
-            content: "The following will animate Masses;",
+            content: "The following will animate Masses in CTK;",
+            
             massSchedule: [
-              { mass: "1st Mass", group: "St. Thomas of Aquinas SCC" },
-              { mass: "2nd Mass", group: "St. Teresa of Avila SCC" },
-              { mass: "3rd Mass", group: "St. Teresa of Calcutta SCC" },
-              { mass: "4th Mass", group: "St. Teresa of Child Jesus SCC" }
+              
+              { mass: "1st Mass", group: "St. Vincent de Paul SCC" },
+              { mass: "2nd Mass", group: "All Saints SCC" },
+              { mass: "3rd Mass", group: "Charismatic" }
+
             ]
+          },
+          {
+            type: "text",
+            content: "The following will animate Masses at St. John the Evangelist;",
+            
+            massSchedule: [
+              { mass: "1st Mass", group: "Couples for Christ" },
+              { mass: "2nd Mass", group: "St.Benard" },
+              
+
+            ]
+          },
+          {
+            noteIndex: 'There will be no 1pm Mass at CTK. PMC Masses will be as usual'
+          },
+          {
+            type: "subheading",
+            content: "Easter Monday"
+          },
+          {
+            type: "text",
+            content:"Monday 6th April, will be Easter Monday. His Grace, Most Rev. Philip Anyolo will visit us to celebrate Mass for us and launch the strategic plan for our Parish. Please let us all purpose to attend Mass from 8:30am at CTK Church animated by CWA."  
           }
         ]
       },
@@ -143,19 +128,19 @@ const Announcements = () => {
         items: [
           {
             type: "subheading",
-            content: "BLESSING OF HOMES"
+            content: "BIRTHDAYS"
           },
           {
             type: "text",
-            content: "There will be home blessing for Our Lay of Mercy SCC – Tuesday, 24th March from 6pm"
+            content: "Those who have celebrated their birthdays this month are requested to come forward for blessing."
           },
           {
             type: "subheading",
-            content: "JOB ADVERTISEMENT"
+            content: "NEW PAYBILL"
           },
           {
             type: "text",
-            content: "Caritas Nairobi is advertising for a position of food security and livelihoods coordinator. For more details, kindly visit the notice board."
+            content: "Beginning the month of April 2026 we are all advised that we shall be using paybill 4039655 for sadaka, host & wine, stole fees, and 2nd collections while paybill number 653472 shall remain for tithe, jumuiya & group savings and donations."
           }
         ]
       }
@@ -284,8 +269,7 @@ const Announcements = () => {
   };
 
   return (
-    <>
-      <Header />
+  
       <main className="announcements-page">
         <section className="announcements-section" ref={announcementsRef}>
           <div className="announcements-container">
@@ -436,16 +420,12 @@ const Announcements = () => {
                 <FiCalendar className="footer-icon" />
                 For more information, please visit the parish office or check the notice board
               </p>
-              <div className="footer-links">
-                <Link to="/contact-us" className="footer-link">Contact Us</Link>
-                <Link to="/calendar" className="footer-link">View Calendar</Link>
-              </div>
+              
             </motion.div>
           </div>
         </section>
       </main>
-      <Footer />
-    </>
+
   );
 };
 

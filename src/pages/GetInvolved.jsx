@@ -90,8 +90,7 @@ const GetInvolved = () => {
   ]
 
   return (
-    <>
-      <Header />
+   
       <main className="get-involved-main">
         <div className="get-involved-header">
           <motion.h1
@@ -151,8 +150,7 @@ const GetInvolved = () => {
           </motion.section>
         </div>
       </main>
-      <Footer />
-    </>
+
   )
 }
 

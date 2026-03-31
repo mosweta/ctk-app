@@ -1,7 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import Header from '../section/Header'
-import Footer from '../section/Footer'
+
 import './Staff.css'
 
 // Import your images (adjust the paths based on your actual file structure)
@@ -62,8 +61,7 @@ const Staff = () => {
   ]
 
   return (
-    <>
-      <Header />
+    
       <main className="staff-main">
         <div className="staff-header" style={{ backgroundImage: `url(${bgImage})` }}>
           <motion.h1
@@ -103,8 +101,8 @@ const Staff = () => {
           </div>
         </div>
       </main>
-      <Footer />
-    </>
+      
+   
   )
 }
 

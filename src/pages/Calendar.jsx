@@ -97,8 +97,7 @@ const Calendar = () => {
   }
 
   return (
-    <>
-      <Header />
+  
       <main className="calendar-main">
         <motion.div
           className="calendar-container"
@@ -271,8 +270,7 @@ const Calendar = () => {
           </AnimatePresence>
         </motion.div>
       </main>
-      <Footer />
-    </>
+
   )
 }
 

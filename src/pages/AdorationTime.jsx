@@ -6,11 +6,11 @@ import ChurchTime from '../section/ChurchTime'
 const AdorationTime = () => {
   return (
     <>
-      <Header />
+      
       <main style={{ padding: '20px' }}>
         <ChurchTime showOnly="adoration" />
       </main>
-      <Footer />
+      
     </>
   )
 }

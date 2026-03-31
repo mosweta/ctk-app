@@ -196,7 +196,7 @@ const EdpuzzleVideoPlayer = ({
         <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
         <p className="text-white text-lg mb-2">Video Not Available</p>
         <p className="text-gray-400 text-sm text-center">
-          This lesson doesn't have a video or the YouTube URL is invalid.
+          The YouTube URL is invalid.
         </p>
       </div>
     );
@@ -231,7 +231,7 @@ const EdpuzzleVideoPlayer = ({
             className="p-2 bg-black bg-opacity-50 text-white rounded-full 
                        hover:bg-red-600 transition-colors backdrop-blur-sm
                        hover:scale-110 active:scale-95"
-            title="Previous lesson"
+            title="Previous video"
           >
             <ChevronLeft size={isMobile ? 20 : 24} />
           </button>
@@ -312,7 +312,7 @@ EdpuzzleVideoPlayer.defaultProps = {
   onPreviousLesson: () => {},
   hasNextLesson: false,
   hasPreviousLesson: false,
-  lessonTitle: "Current Lesson",
+  lessonTitle: "Current Video",
   questions: [],
   onQuestionAnswered: () => {},
   lessonId: null,

@@ -85,29 +85,33 @@ const Header = () => {
       title: 'About',
       icon: <Users />,
       dropdown: [
-        { title: 'Staff', path: '/staff', icon: <User /> },
-        { title: 'Photo Album', path: '/photo-album', icon: <Image /> },
-        { title: 'Contact Us', path: '/contact-us', icon: <Mail /> }
+        { title: 'Staff', path: '/about/staff', icon: <User /> },
+        { title: 'Photo Album', path: '/about/gallery', icon: <Image /> },
+        { title: 'Contact Us', path: '/about/contact', icon: <Mail /> }
       ]
     },
     liturgy: {
       title: 'Liturgy',
       icon: <Cross />,
       dropdown: [
-        { title: 'Mass Times', path: '/mass-time', icon: <Clock /> },
-        { title: 'Adoration', path: '/adoration-time', icon: <Heart /> },
-        { title: 'Confession', path: '/confession-time', icon: <Cross /> }
+        { title: 'Sacraments', path: '/liturgy/sacrament', icon: <Heart /> },
+        { title: 'Mass Times', path: '/liturgy/mass-times', icon: <Clock /> },
+        
+        { title: 'Confession Time', path: '/liturgy/confession', icon: <Cross /> },
+        { title: 'Adoration Time', path: '/liturgy/adoration', icon: <Heart /> }
       ]
     },
     events: {
       title: 'Events & News',
       icon: <Calendar />,
       dropdown: [
-        { title: 'Calendar', path: '/calendar', icon: <Calendar /> },
-        { title: 'News', path: '/news', icon: <Bell /> }
+        { title: 'Calendar', path: '/events/calendar', icon: <Calendar /> },
+        { title: 'Announcement', path: '/events/announcements', icon: <Bell /> }
       ]
     }
   };
+ 
+
 
   return (
     <>
@@ -218,23 +222,9 @@ const Header = () => {
               </AnimatePresence>
             </div>
 
-            <motion.button
-              className="nav-link"
-              onClick={() => scrollToSection('sacraments')}
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Sacraments
-            </motion.button>
+            
 
-            <motion.button
-              className="nav-link"
-              onClick={() => handleNavigation('/get-involved')}
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Get Involved
-            </motion.button>
+            
 
             {/* Events Dropdown */}
             <div className="dropdown-container">
@@ -249,6 +239,7 @@ const Header = () => {
                 Events
                 <ChevronDown className={`dropdown-arrow ${isEventsOpen ? 'rotated' : ''}`} />
               </motion.button>
+              
               <AnimatePresence>
                 {isEventsOpen && (
                   <motion.div 
@@ -275,7 +266,16 @@ const Header = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
+              
             </div>
+            <motion.button
+              className="nav-link"
+              onClick={() => handleNavigation('/get-involved')}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Get Involved
+            </motion.button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -406,15 +406,7 @@ const Header = () => {
                   </AnimatePresence>
                 </div>
 
-                {/* Sacraments */}
-                <motion.button
-                  className="sidebar-nav-item"
-                  onClick={() => scrollToSection('sacraments')}
-                  whileHover={{ x: 10 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Sacraments
-                </motion.button>
+                
 
                 {/* Get Involved */}
                 <motion.button
@@ -423,6 +415,7 @@ const Header = () => {
                   whileHover={{ x: 10 }}
                   whileTap={{ scale: 0.95 }}
                 >
+                  <Heart className="sidebar-icon" />
                   Get Involved
                 </motion.button>
 

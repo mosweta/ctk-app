@@ -43,8 +43,9 @@ const MinistryReadMore = () => {
         transition={{ duration: 0.5, delay: 0.5 }}
       >
         {[
-          { title: 'CMA', desc: 'Catholic Men Association — fellowship and service for men.' },
-          { title: 'CWA', desc: 'Catholic Women Association — fellowship and outreach for women.' },
+          { title: 'Catholic Men Association (CMA)', desc: "The Catholic Men Association (CMA) is a lay movement committed to forming men of faith who uphold Christian values in family, church, and society. CMA members actively participate in parish life, community service, and spiritual formation programs."},
+          
+          { title: 'Catholic Women Association (CWA)', desc: 'The Catholic Women Association (CWA) is an association of Catholic lay women mandated to empower Catholic Women spiritually, morally, socially and economically for the purposes of evangelizing families and society at large. The association fosters strong faith, commitment, teamwork, humility, respect, diligence, hard work, and accountability.' },
           { title: 'YCS', desc: 'Youth Catholic Society — formation and activities for young people.' },
           { title: 'PMC', desc: 'Parish Missionary Community — evangelization and community outreach.' }
         ].map((ministry, index) => (
@@ -65,14 +66,7 @@ const MinistryReadMore = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 1.5 }}
         >
-          <motion.button 
-            className="btn-go" 
-            onClick={() => navigate('/ministry/signup')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Go to Sign Up Page
-          </motion.button>
+          
         </motion.div>
       </motion.div>
     </motion.main>

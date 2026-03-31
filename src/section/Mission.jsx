@@ -85,8 +85,7 @@ const Mission = () => {
               <div className="card-content">
                 <h3 className="card-title">Our Mission</h3>
                 <p className="card-text">
-                  To nurture a eucharistic community that enriches spiritual life of its members, 
-                  their families, the local church, in spreading the catholic faith.
+                  To love God and humanity, teaching the Gospel values, spreading joy and showing compassion to all
                 </p>
               </div>
             </motion.div>
