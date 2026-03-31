@@ -12,7 +12,7 @@ import {
 } from 'react-icons/fi';
 import {Church} from "lucide-react";
 
-import './History.css';
+import './history.css';
 
 // Import images (you'll need to add these to your assets folder)
 import ctkMainImg from '../assets/church.jpg';
