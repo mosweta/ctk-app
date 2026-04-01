@@ -9,7 +9,7 @@ import { FiChevronLeft, FiChevronRight, FiPlay, FiCalendar } from 'react-icons/f
 import churchDesktop from '../assets/church.jpg';
 import churchTablet from '../assets/church.jpg';
 import churchMobileLandscape from '../assets/church.jpg';
-import churchMobilePortrait from '../assets/churchPortrait.png';
+import churchMobilePortrait from '../assets/churchP.png';
 
 // Bishops Images
 import bishopsDesktop from '../assets/churchL.png';
