@@ -1,11 +1,682 @@
+/* ==========================================================================
+   CHRIST THE KING PARISH — GLOBAL STYLESHEET
+
+   Stack:    Tailwind CSS v4 (via @tailwindcss/vite)
+   Purpose:  Single source of truth for design tokens, base styles, and
+             reusable component classes used across the entire site.
+
+   Sections:
+     1. Tailwind import and dark-mode variant
+     2. Theme tokens (raw color scales, fonts, spacing, shadows)
+     3. Semantic role tokens (light mode defaults)
+     4. Dark mode overrides (.dark on <html>)
+     5. Base layer (reset, typography, focus, motion)
+     6. Custom utilities (buttons, cards, inputs, badges, chips)
+     7. Layout utilities (container, section backgrounds)
+
+   Notes on Tailwind v4:
+     - Custom classes MUST be declared with `@utility`, not `@layer components`.
+       In v4, `@apply` cannot resolve `@theme` tokens from inside
+       `@layer components`, which produces "Cannot apply unknown utility class"
+       errors at build time.
+     - Theme tokens live inside `@theme` blocks so Tailwind generates utility
+       classes from them (e.g., --color-primary becomes `bg-primary`,
+       `text-primary`, `border-primary`, etc.).
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. TAILWIND IMPORT AND DARK-MODE VARIANT
+   -------------------------------------------------------------------------- */
+
 @import "tailwindcss";
 
-.{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Class-based dark mode: activated by adding `dark` to <html>.
+   A small inline script in index.html sets this class before paint
+   to prevent a flash of the wrong theme on page load. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+/* --------------------------------------------------------------------------
+   2. THEME TOKENS
+
+   Raw palette. These are the source values. Components should not
+   reference these directly; they should use the semantic role tokens
+   defined in section 3 and section 4.
+   -------------------------------------------------------------------------- */
+
+@theme {
+  /* ---- Maroon scale (primary brand) ----------------------------------- */
+  --color-maroon-50:  #fdf2f2;
+  --color-maroon-100: #fbe5e5;
+  --color-maroon-200: #f6c8c8;
+  --color-maroon-300: #ee9b9b;
+  --color-maroon-400: #e26d6d;
+  --color-maroon-500: #d13a3a;
+  --color-maroon-600: #8b1a1a;  /* Primary brand value */
+  --color-maroon-700: #6f1414;
+  --color-maroon-800: #571010;
+  --color-maroon-900: #3f0c0c;
+  --color-maroon-950: #260707;
+
+  /* ---- Green scale (base surfaces, footer) ---------------------------- */
+  --color-green-50:  #f0f5f1;
+  --color-green-100: #dce9de;
+  --color-green-200: #b9d3be;
+  --color-green-300: #8fb596;
+  --color-green-400: #649370;
+  --color-green-500: #3d6e4b;
+  --color-green-600: #2d5238;
+  --color-green-700: #234a33;  /* Body text green */
+  --color-green-800: #1e4a2a;  /* Footer / dark surface */
+  --color-green-900: #163a21;
+  --color-green-950: #0d2415;
+
+  /* ---- Gold scale (liturgical accent, footer ornament) ---------------- */
+  --color-gold-50:  #fefaed;
+  --color-gold-100: #fdf3c8;
+  --color-gold-200: #fae58e;
+  --color-gold-300: #f6d14e;
+  --color-gold-400: #eeb824;
+  --color-gold-500: #d4af37;  /* Accent value */
+  --color-gold-600: #b08a1a;
+  --color-gold-700: #8b6a0f;
+  --color-gold-800: #664a0b;
+  --color-gold-900: #422f08;
+
+  /* ---- Neutral scale (warm gray, harmonizes with maroon and gold) ----- */
+  --color-neutral-50:  #fafaf7;
+  --color-neutral-100: #f3f2ed;
+  --color-neutral-200: #e6e4dc;
+  --color-neutral-300: #d1cec3;
+  --color-neutral-400: #a8a397;
+  --color-neutral-500: #7a7568;
+  --color-neutral-600: #565046;
+  --color-neutral-700: #3d382f;  /* Body text */
+  --color-neutral-800: #2a2620;
+  --color-neutral-900: #1a1712;
+  --color-neutral-950: #0d0b08;  /* Dark-mode page background */
+
+  /* ---- Liturgical color scale (Catholic season colors) ----------------
+     These are fixed values used only on the readings pages and Mass
+     schedule displays. They do not change between light and dark mode
+     because they represent the actual liturgical colors of the Church. */
+  --color-liturgy-white:  #faf7ed;
+  --color-liturgy-red:    #a01a1a;
+  --color-liturgy-green:  #2d5238;
+  --color-liturgy-purple: #4a2050;
+  --color-liturgy-rose:   #c76a8a;
+  --color-liturgy-black:  #0d0b08;
+  --color-liturgy-gold:   #d4af37;
+
+  /* ---- Semantic status colors (used only for feedback states) --------- */
+  --color-success: #3a7d44;
+  --color-warning: #b8860b;
+  --color-danger:  #a01a1a;
+  --color-info:    #3d6e8b;
+
+  /* ---- Fonts ---------------------------------------------------------- */
+  --font-sans:  'Poppins', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-mono:  ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  /* ---- Type scale ----------------------------------------------------- */
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
+  --text-5xl:  3rem;
+
+  /* ---- Border radius scale ------------------------------------------- */
+  --radius-sm:  6px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-2xl: 20px;
+
+  /* ---- Shadow scale --------------------------------------------------- */
+  --shadow-xs:    0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm:    0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md:    0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg:    0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-xl:    0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-brand: 0 4px 20px rgba(139, 26, 26, 0.1);
+
+  /* ---- Container widths ----------------------------------------------- */
+  --container-sm:  640px;
+  --container-md:  768px;
+  --container-lg:  1024px;
+  --container-xl:  1200px;
+  --container-2xl: 1400px;
 }
 
-body {
-  background-color:aliceblue;
+
+/* --------------------------------------------------------------------------
+   3. SEMANTIC ROLE TOKENS — LIGHT MODE (DEFAULT)
+
+   These are the names components actually use. If the brand ever
+   changes, only this block and the dark-mode block need updating.
+   -------------------------------------------------------------------------- */
+
+@theme {
+  /* ---- Primary (maroon) ---------------------------------------------- */
+  --color-primary:        var(--color-maroon-600);
+  --color-primary-hover:  var(--color-maroon-700);
+  --color-primary-light:  var(--color-maroon-100);
+  --color-primary-subtle: var(--color-maroon-50);
+
+  /* ---- Base (green, for dark surfaces like footer and sidebar) ------- */
+  --color-base:       var(--color-green-800);
+  --color-base-hover: var(--color-green-900);
+  --color-base-light: var(--color-green-100);
+
+  /* ---- Accent (gold) -------------------------------------------------- */
+  --color-accent:       var(--color-gold-500);
+  --color-accent-light: var(--color-gold-100);
+
+  /* ---- Surfaces and structure ---------------------------------------- */
+  --color-background:    var(--color-neutral-50);
+  --color-surface:       #ffffff;
+  --color-surface-alt:   var(--color-neutral-100);
+  --color-border:        var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-300);
+
+  /* ---- Text ---------------------------------------------------------- */
+  --color-heading: var(--color-green-700);
+  --color-body:    var(--color-neutral-700);
+  --color-muted:   var(--color-neutral-500);
+  --color-subtle:  var(--color-neutral-400);
+
+  /* ---- Text on colored backgrounds -----------------------------------
+     In light mode, primary backgrounds are dark so text is white.
+     In dark mode (section 4), primary backgrounds become light so text
+     becomes dark. This token encodes that flip. */
+  --color-on-primary: #ffffff;
+  --color-on-base:    #ffffff;
+  --color-on-surface: var(--color-neutral-700);
+}
+
+
+/* --------------------------------------------------------------------------
+   4. DARK MODE OVERRIDES
+
+   Activated when <html class="dark"> is set. Palette hues are preserved;
+   only their role assignments change to remain readable and to preserve
+   visual hierarchy.
+
+   Rationale for specific choices:
+     - Primary lifts from maroon-600 to maroon-400. A dark maroon on a dark
+       background fails WCAG AA contrast; maroon-400 is the same hue lifted
+       to work as a foreground color on dark surfaces.
+     - Base green lifts from green-800 to green-700 so the footer remains
+       a distinct surface rather than blending into the page background.
+     - Surfaces invert: page becomes near-black, cards slightly lighter,
+       and borders become subtle neutral-800/700 tones.
+     - Text colors invert to light-on-dark while keeping the same semantic
+       hierarchy (heading > body > muted > subtle).
+   -------------------------------------------------------------------------- */
+
+.dark {
+  /* ---- Primary (maroon, lifted for dark-mode contrast) --------------- */
+  --color-primary:        var(--color-maroon-400);
+  --color-primary-hover:  var(--color-maroon-300);
+  --color-primary-light:  rgba(226, 109, 109, 0.15);
+  --color-primary-subtle: rgba(226, 109, 109, 0.08);
+
+  /* ---- Base (green, lifted so footer stays visible) ------------------ */
+  --color-base:       var(--color-green-700);
+  --color-base-hover: var(--color-green-800);
+  --color-base-light: rgba(35, 74, 51, 0.25);
+
+  /* ---- Accent (gold, slightly brighter in dark mode) ----------------- */
+  --color-accent:       var(--color-gold-400);
+  --color-accent-light: rgba(238, 184, 36, 0.15);
+
+  /* ---- Surfaces and structure ---------------------------------------- */
+  --color-background:    var(--color-neutral-950);
+  --color-surface:       var(--color-neutral-900);
+  --color-surface-alt:   var(--color-neutral-800);
+  --color-border:        var(--color-neutral-800);
+  --color-border-strong: var(--color-neutral-700);
+
+  /* ---- Text ---------------------------------------------------------- */
+  --color-heading: var(--color-neutral-50);
+  --color-body:    var(--color-neutral-300);
+  --color-muted:   var(--color-neutral-400);
+  --color-subtle:  var(--color-neutral-500);
+
+  /* ---- Text on colored backgrounds ---------------------------------- */
+  --color-on-primary: var(--color-neutral-950);
+  --color-on-base:    #ffffff;
+  --color-on-surface: var(--color-neutral-300);
+}
+
+
+/* --------------------------------------------------------------------------
+   5. BASE LAYER
+
+   Global reset, typography defaults, focus ring, reduced-motion respect.
+   -------------------------------------------------------------------------- */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+
+  /* Smooth scrolling only for users who have not requested reduced motion.
+     This also handles anchor-link navigation (href="#section"). */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--color-body);
+    background-color: var(--color-background);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    color: var(--color-heading);
+    line-height: 1.2;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  a {
+    color: var(--color-primary);
+    transition: color 150ms ease;
+  }
+  a:hover {
+    color: var(--color-primary-hover);
+  }
+
+  button {
+    font-family: inherit;
+  }
+
+  /* Visible focus ring for keyboard users. Mouse users do not see it. */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Respect the user's reduced-motion preference across all animations
+     and transitions, including those defined in Framer Motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   6. CUSTOM UTILITIES
+
+   Component classes used across the site. Declared with `@utility` so
+   Tailwind v4 can resolve them and generate the final CSS.
+
+   Each utility is written with explicit CSS properties rather than
+   `@apply` to avoid the Tailwind v4 limitation described at the top of
+   this file. Hover, focus, and placeholder states are handled with
+   nested selectors within the same utility block.
+   -------------------------------------------------------------------------- */
+
+/* ---- Buttons ---------------------------------------------------------- */
+
+/* Primary action button. Used for main CTAs: submit, save, create. */
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+
+  &:hover {
+    background-color: var(--color-primary-hover);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--color-background),
+      0 0 0 4px var(--color-primary);
+  }
+}
+
+/* Secondary action button. Outlined variant for cancel, preview, alternate. */
+@utility btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: transparent;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-primary);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+
+  &:hover {
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* Ghost button. Icon-only actions in tables and toolbars. */
+@utility btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: var(--radius-lg);
+  color: var(--color-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+
+  &:hover {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+  }
+}
+
+/* Destructive button. Delete actions only. Always paired with a confirmation dialog. */
+@utility btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-danger);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ---- Surfaces --------------------------------------------------------- */
+
+/* Standard content card. White (or dark surface in dark mode) with subtle border. */
+@utility card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  padding: 1.5rem;
+}
+
+/* Card that responds to hover. Use for clickable cards. */
+@utility card-hover {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  padding: 1.5rem;
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary-light);
+  }
+}
+
+/* ---- Forms ------------------------------------------------------------ */
+
+/* Standard text input, textarea, and select styling. */
+@utility input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--color-surface);
+  color: var(--color-body);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  font-size: 0.875rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &::placeholder {
+    color: var(--color-subtle);
+  }
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+  }
+}
+
+/* Form field label. */
+@utility label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-heading);
+  margin-bottom: 0.5rem;
+}
+
+/* ---- Typography ------------------------------------------------------- */
+
+/* Small uppercase intro text above a heading, e.g., "SACRAMENTS" above "Baptism". */
+@utility eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+}
+
+/* Section-level heading below the page header. */
+@utility section-heading {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  line-height: 1.2;
+}
+
+/* Section subtitle, muted by default. */
+@utility section-subtitle {
+  font-size: 1rem;
+  color: var(--color-muted);
+  margin-top: 0.5rem;
+}
+
+/* ---- Badges and chips ------------------------------------------------- */
+
+/* Liturgical season badge. Pair with a bg-liturgy-* class for the color.
+   The border ensures the badge is visible against both light and dark
+   surfaces without changing its liturgical identity. */
+@utility liturgy-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+.dark .liturgy-badge {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Base chip. Not used directly; prefer the semantic variants below. */
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+}
+
+/* Chip: success state. Used for "Published", "Active", "Completed". */
+@utility chip-success {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background-color: #dcfce7;
+  color: #166534;
+}
+.dark .chip-success {
+  background-color: rgba(22, 101, 52, 0.4);
+  color: #86efac;
+}
+
+/* Chip: warning state. Used for "Draft", "Pending". */
+@utility chip-warning {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background-color: #fef3c7;
+  color: #92400e;
+}
+.dark .chip-warning {
+  background-color: rgba(146, 64, 14, 0.4);
+  color: #fcd34d;
+}
+
+/* Chip: danger state. Used for "Rejected", "Cancelled", "Failed". */
+@utility chip-danger {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+.dark .chip-danger {
+  background-color: rgba(153, 27, 27, 0.4);
+  color: #fca5a5;
+}
+
+/* Chip: neutral state. Used for "Archived", category tags. */
+@utility chip-neutral {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+.dark .chip-neutral {
+  background-color: var(--color-neutral-800);
+  color: var(--color-neutral-300);
+}
+
+/* Chip: primary state. Used for the active filter or the "New" marker. */
+@utility chip-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+
+/* --------------------------------------------------------------------------
+   7. LAYOUT UTILITIES
+
+   Page structure helpers. These do not need to be @apply-compatible, so
+   they live in the standard utilities layer.
+   -------------------------------------------------------------------------- */
+
+@layer utilities {
+  /* Centered page container with responsive horizontal padding. */
+  .container-page {
+    width: 100%;
+    max-width: var(--container-2xl);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  @media (min-width: 640px) {
+    .container-page {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .container-page {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  /* Dark section background used by hero and footer. Uses the base
+     green token so it flips correctly between light and dark modes. */
+  .bg-base-section {
+    background-color: var(--color-base);
+    color: var(--color-on-base);
+  }
 }

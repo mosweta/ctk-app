@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../assets/logoctk.png';
+import ThemeToggle from '../components/ThemeToggle';
 import './Header.css';
 import { 
   Home, 
@@ -278,8 +279,20 @@ const Header = () => {
             >
               Get Involved
             </motion.button>
+            <div className="ml-2">
+  <ThemeToggle />
+</div>
           </div>
-
+<div className="md:hidden flex items-center gap-2">
+  <ThemeToggle />
+  <button
+    onClick={() => setIsMenuOpen(true)}
+    className="p-2 rounded-lg text-primary hover:bg-primary-light"
+    aria-label="Open menu"
+  >
+    
+  </button>
+</div>
           {/* Mobile Menu Button */}
           <motion.button
             className="mobile-menu-btn"

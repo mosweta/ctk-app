@@ -2,8 +2,7 @@ import React, { useState, useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import Swal from "sweetalert2";
 import "./contact.css";
-import Header from '../section/Header'
-import Footer from '../section/Footer'
+
 
 const ContactForm = () => {
   const [form, setForm] = useState({ name: "", email: "", message: "" });

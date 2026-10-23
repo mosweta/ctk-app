@@ -1,16 +1,102 @@
 <!doctype html>
 <html lang="en">
+  <!--
+    ============================================================================
+    CHRIST THE KING PARISH - ROOT HTML
+
+    Responsibilities:
+      1. Load fonts (Poppins) and icons (Font Awesome)
+      2. Set meta tags for SEO, viewport, and PWA theme color
+      3. Load an inline script that applies the correct theme class before
+         the body paints (prevents flash of light mode for dark-mode users)
+      4. Mount the React application
+
+    The anti-flash script runs synchronously before React loads. It reads
+    the user's stored preference or falls back to the OS preference, then
+    adds `dark` to <html> if needed. The rest of the app reads this class.
+    ============================================================================
+  -->
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png+xml" href="/logoctk.png" />
-      <link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-/>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <!-- Favicon. -->
+    <link rel="icon" type="image/png" href="/logoctk.png" />
+
+    <!-- Google Fonts: Poppins is the primary typeface across the site. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome for legacy icons used on some pages. -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- Responsive viewport. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CTK Embakasi</title>
+
+    <!--
+      Theme color for browser chrome (address bar) on mobile devices.
+      Switches based on OS dark mode. The brand primary is maroon, the
+      brand base is deep green.
+    -->
+    <meta
+      name="theme-color"
+      content="#8b1a1a"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#1e4a2a"
+      media="(prefers-color-scheme: dark)"
+    />
+
+    <!-- SEO description. -->
+    <meta
+      name="description"
+      content="Christ the King Catholic Parish, Embakasi - Mass times, daily readings, events, and parish life."
+    />
+
+    <title>Christ the King Catholic Parish - Embakasi</title>
+
+    <!--
+      Anti-flash script for dark mode.
+
+      Runs before any other asset is fetched. Determines whether the page
+      should render in dark mode based on (in order of precedence):
+
+        1. localStorage.theme === 'dark'
+        2. localStorage.theme === 'system' or absent, AND the OS reports
+           prefers-color-scheme: dark
+
+      If dark mode applies, adds the `dark` class to <html> immediately.
+      The Tailwind theme then resolves all `dark:` variants and role tokens
+      to their dark values before the first paint.
+
+      Wrapped in try/catch in case localStorage is disabled (private mode,
+      enterprise browser policies) - the app still works, just without
+      persistence of the user's theme choice.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark =
+            stored === 'dark' ||
+            ((stored === 'system' || !stored) && systemDark);
+          if (isDark) document.documentElement.classList.add('dark');
+        } catch (e) {
+          /* localStorage unavailable; fall back to light mode. */
+        }
+      })();
+    </script>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

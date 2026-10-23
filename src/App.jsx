@@ -28,6 +28,7 @@ import ContactUs from './pages/ContactUs';
 import Announcements from './pages/Announcements';
 import Sacraments from './pages/Sacraments';
 import History from './pages/History';
+import ScrollToTop from './components/ScrollToTop';
 
 // --------------------
 // Layout Wrapper
@@ -37,6 +38,7 @@ const Layout = () => (
     <Header />
     <Outlet />
     <Footer />
+    <ScrollToTop />
   </>
 );
 
