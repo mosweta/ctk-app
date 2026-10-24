@@ -6,35 +6,35 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && npm run copy-routes",
-    "copy-routes": "cpx _routes.json dist/",
+    "copy-routes": "node --input-type=module -e \"import { copyFileSync } from 'node:fs'; copyFileSync('_routes.json', 'dist/_routes.json')\"",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.14",
-    "framer-motion": "^12.36.0",
-    "lucide-react": "^0.577.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "framer-motion": "^14.6.0",
+    "lucide-react": "^1.61.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "react-google-recaptcha": "^3.1.0",
-    "react-icons": "^5.6.0",
-    "react-router-dom": "^6.14.1",
+    "react-icons": "^5.7.0",
+    "react-router-dom": "^7.18.4",
     "react-scroll": "^1.9.3",
     "react-youtube": "^10.1.0",
-    "resend": "^6.5.2",
-    "sweetalert2": "^11.26.3",
-    "tailwindcss": "^4.1.14"
+    "resend": "^6.34.1",
+    "sweetalert2": "^11.26.25",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.36.0",
-    "@types/react": "^19.1.16",
-    "@types/react-dom": "^19.1.9",
-    "@vitejs/plugin-react": "^5.0.4",
-    "cpx": "^1.5.0",
-    "eslint": "^9.36.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.22",
-    "globals": "^16.4.0",
-    "vite": "^7.1.7"
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "baseline-browser-mapping": "^2.11.32",
+    "eslint": "^10.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "vite": "^8.3.5"
   }
 }
