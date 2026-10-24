@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Header from '../section/Header'
-import Footer from '../section/Footer'
+
 import './Calendar.css'
-import bgImage from '../assets/bg10.jpg'
+
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date())

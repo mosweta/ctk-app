@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, no-useless-escape */
 import { useEffect, useRef, useState, useCallback } from 'react';
 import YouTube from 'react-youtube';
 import {

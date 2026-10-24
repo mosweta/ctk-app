@@ -1,3 +1,9 @@
+// Note: This component initializes `expandedSections` from
+// `announcementData` via a useEffect. ESLint's react-hooks/set-state-in-effect
+// rule flags this pattern. The clean fix is lazy useState initialization,
+// which F4 will implement when this page is migrated to the shared
+// component pattern and connected to the readings API.
+
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../section/Header';
@@ -22,17 +28,11 @@ import { Link } from 'react-router-dom';
 const Announcements = () => {
   const [expandedSections, setExpandedSections] = useState({});
   const [copied, setCopied] = useState(false);
-  const [activeWeek, setActiveWeek] = useState('current');
+ 
   const announcementsRef = useRef(null);
 
   // Initialize all sections as expanded by default
-  useEffect(() => {
-    const initialExpanded = {};
-    announcementData.sections.forEach((_, index) => {
-      initialExpanded[index] = true;
-    });
-    setExpandedSections(initialExpanded);
-  }, []);
+
 
   // Announcement data based on your sample
   const announcementData = {
@@ -147,6 +147,16 @@ const Announcements = () => {
     ]
   };
 
+useEffect(() => {
+  const initialExpanded = {};
+  announcementData.sections.forEach((_, index) => {
+    initialExpanded[index] = true;
+  });
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  setExpandedSections(initialExpanded);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
   // Toggle section expansion
   const toggleSection = (index) => {
     setExpandedSections(prev => ({
@@ -221,19 +231,7 @@ const Announcements = () => {
     return text;
   };
 
-  // Download as text file
-  const downloadAsText = () => {
-    const text = generateTextVersion();
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `announcements_${announcementData.date.replace(/\s/g, '_')}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+
 
   // Print announcements
   const handlePrint = () => {

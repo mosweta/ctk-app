@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiChevronLeft, 
@@ -17,7 +17,6 @@ import './history.css';
 // Import images (you'll need to add these to your assets folder)
 import ctkMainImg from '../assets/church.jpg';
 import ctkSideImg from '../assets/church2.jpg';
-import ctkBuildingImg from '../assets/Groto.jpg';
 import ctkMassImg from '../assets/bishops.jpg';
 import groto from '../assets/Groto.jpg';
 import sjtePlaceholderImg from '../assets/history/Sjte.jpeg';

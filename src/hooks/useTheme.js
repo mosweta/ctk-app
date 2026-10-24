@@ -68,7 +68,7 @@ export function useTheme() {
     applyTheme(theme);
     try {
       localStorage.setItem(STORAGE_KEY, theme);
-    } catch (e) {
+    } catch {
       /* localStorage unavailable; theme just won't persist. */
     }
 

@@ -1,11 +1,10 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+
 import { motion } from 'framer-motion'
 import headerBg from '../assets/bg1.jpeg'
 import './MinistryReadMore.css'
 
 const MinistryReadMore = () => {
-  const navigate = useNavigate()
 
   return (
     <motion.main 

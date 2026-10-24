@@ -249,19 +249,6 @@ const Sacraments = () => {
     }
   ];
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'ArrowLeft') {
-        navigatePrev();
-      } else if (e.key === 'ArrowRight') {
-        navigateNext();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex]);
-
   const navigateNext = () => {
     if (isAnimating) return;
     setDirection(1);
@@ -277,6 +264,19 @@ const Sacraments = () => {
     setCurrentIndex((prev) => (prev - 1 + sacraments.length) % sacraments.length);
     setTimeout(() => setIsAnimating(false), 500);
   };
+
+  // Keyboard navigation
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowLeft') navigatePrev();
+    else if (e.key === 'ArrowRight') navigateNext();
+  };
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [currentIndex]);
+
+  
 
   const goToSlide = (index) => {
     if (isAnimating || index === currentIndex) return;

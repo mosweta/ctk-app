@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import EdpuzzleVideoPlayer from './videoplayer'; // Adjust path as needed
 import './Livestream.css';
 import { FiYoutube, FiCalendar, FiEye } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
+
 
 const slideUpVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -17,7 +17,7 @@ const slideUpVariants = {
 const Livestream = () => {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const navigate = useNavigate();
+
 
   // Just 4 videos for now
   const pastVideos = [

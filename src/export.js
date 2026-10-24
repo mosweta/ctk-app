@@ -1,14 +1,14 @@
 
-import { IoDocumentTextSharp } from "react-icons/io5";
-import { MdOutlineDesignServices } from "react-icons/md";
-import { FaRegBuilding } from "react-icons/fa";
-import { FaSitemap } from "react-icons/fa";
+// import { IoDocumentTextSharp } from "react-icons/io5";
+// import { MdOutlineDesignServices } from "react-icons/md";
+// import { FaRegBuilding } from "react-icons/fa";
+// import { FaSitemap } from "react-icons/fa";
 
 import familyday from "./assets/christtheking.jpg";
 import Elections_groups from "./assets/Charity.jpg";
 import Elections_ppc from "./assets/Bishop.jpg";
 import Deanery_family_day from "./assets/Youth.jpg";
-import { time } from "framer-motion";
+
 
 export const event = [
   {

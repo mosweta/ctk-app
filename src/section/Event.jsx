@@ -32,7 +32,7 @@ const Event = () => {
       }, 4000);
     }
     return () => clearInterval(interval);
-  }, [isAutoPlaying, event.length]);
+}, [isAutoPlaying]);
 
   const nextSlide = () => {
     setIsAutoPlaying(false);

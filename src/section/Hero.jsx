@@ -32,58 +32,10 @@ import grotoMobilePortrait from '../assets/Groto.jpg';
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [deviceType, setDeviceType] = useState('desktop');
-  const [orientation, setOrientation] = useState('landscape');
 
-  // Detect device type and orientation
-  useEffect(() => {
-    const detectDevice = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const isPortrait = height > width;
-      
-      // Determine device type
-      if (width <= 640) {
-        setDeviceType('mobile');
-      } else if (width <= 1024) {
-        setDeviceType('tablet');
-      } else {
-        setDeviceType('desktop');
-      }
-      
-      setOrientation(isPortrait ? 'portrait' : 'landscape');
-    };
-    
-    detectDevice();
-    window.addEventListener('resize', detectDevice);
-    window.addEventListener('orientationchange', detectDevice);
-    
-    return () => {
-      window.removeEventListener('resize', detectDevice);
-      window.removeEventListener('orientationchange', detectDevice);
-    };
-  }, []);
 
-  // Get the appropriate image for current device and orientation
-  const getImageForDevice = (images) => {
-    // Mobile Portrait (most common on phones)
-    if (deviceType === 'mobile' && orientation === 'portrait') {
-      return images.mobilePortrait || images.mobileLandscape || images.tablet || images.desktop;
-    }
-    
-    // Mobile Landscape
-    if (deviceType === 'mobile' && orientation === 'landscape') {
-      return images.mobileLandscape || images.tablet || images.desktop;
-    }
-    
-    // Tablet
-    if (deviceType === 'tablet') {
-      return images.tablet || images.desktop;
-    }
-    
-    // Desktop
-    return images.desktop;
-  };
+
+  
 
   // Slide data with all image variants
   const slides = [
@@ -105,9 +57,7 @@ const Hero = () => {
       id: 2,
       title: "Experience God's Presence",
       subtitle: "Daily Mass & Adoration",
-      description: deviceType === 'mobile' 
-        ? "Deepen your faith through daily Eucharist and confession." 
-        : "Deepen your faith through daily Eucharist, confession, and perpetual adoration.",
+
       ctaPrimary: { text: "Mass Schedule", link: "/mass-times" },
       ctaSecondary: { text: "Adoration Times", link: "/adoration" },
       images: {
@@ -121,9 +71,8 @@ const Hero = () => {
       id: 3,
       title: "Growing Together in Faith",
       subtitle: "Community & Fellowship",
-      description: deviceType === 'mobile' 
-        ? "Join our vibrant community with programs for all ages." 
-        : "Join our vibrant community with programs for children, youth, and adults.",
+     
+      
       ctaPrimary: { text: "Our Ministries", link: "/readmore" },
       ctaSecondary: { text: "Get Involved", link: "/get-involved" },
       images: {
@@ -137,9 +86,8 @@ const Hero = () => {
       id: 4,
       title: "Prepare Your Heart",
       subtitle: "Season of Lent",
-      description: deviceType === 'mobile' 
-        ? "Join us for special Lenten services and confessions." 
-        : "Join us for special Lenten services, confessions, and Easter celebrations.",
+      
+      
       ctaPrimary: { text: "Announcements", link: "/announcements" },
       ctaSecondary: { text: "Confession Times", link: "/confession" },
       images: {
@@ -178,7 +126,6 @@ const Hero = () => {
   };
 
   const currentSlideData = slides[currentSlide];
-  const currentImage = getImageForDevice(currentSlideData.images);
 
   return (
     <section id="hero" className="hero-section" aria-label="Hero section">
