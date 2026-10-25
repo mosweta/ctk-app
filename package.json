@@ -11,7 +11,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@tiptap/pm": "^3.32.0",
+    "@tiptap/react": "^3.32.0",
+    "@tiptap/starter-kit": "^3.32.0",
     "framer-motion": "^14.6.0",
     "lucide-react": "^1.61.0",
     "react": "^19.3.1",
@@ -20,7 +24,6 @@
     "react-icons": "^5.7.0",
     "react-router-dom": "^7.18.4",
     "react-scroll": "^1.9.3",
-    "react-youtube": "^10.1.0",
     "resend": "^6.34.1",
     "sweetalert2": "^11.26.25",
     "tailwindcss": "^4.3.3"
