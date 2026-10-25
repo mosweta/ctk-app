@@ -13,7 +13,7 @@
 
 import { supabase } from './supabaseClient';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE = import.meta.env.VITE_API_URL ;
 
 export class ApiError extends Error {
   constructor(message, status, data) {
