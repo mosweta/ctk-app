@@ -153,7 +153,7 @@ export default function Footer() {
           </ul>
 
           {/* Mass Hours with explicit CTK and SJTE times */}
-          <div className="bg-white/5 rounded-xl p-5 border border-white/10 backdrop-blur-sm flex flex-col gap-4 ">
+          <div className=" flex flex-col gap-4 ">
             <h5 className="flex items-center gap-2 text-accent font-bold
                            text-sm mb-4 uppercase tracking-wider">
               <FaClock size={16} /> Mass Hours
