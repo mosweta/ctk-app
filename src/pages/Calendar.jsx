@@ -1,276 +1,246 @@
-import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { api } from '../lib/apiClient';
+import { Loader2, ChevronLeft, ChevronRight, Calendar as CalendarIcon, MapPin, Clock, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-import './Calendar.css'
-
-
-const Calendar = () => {
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [events, setEvents] = useState(() => {
-    const savedEvents = localStorage.getItem('calendarEvents')
-    return savedEvents ? JSON.parse(savedEvents) : {}
-  })
-  const [selectedDate, setSelectedDate] = useState(null)
-  const [eventText, setEventText] = useState('')
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [showLogin, setShowLogin] = useState(false)
-  const [password, setPassword] = useState('')
+export default function Calendar() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem('calendarEvents', JSON.stringify(events))
-  }, [events])
+    api.get('/events')
+      .then(res => setEvents(res.data || []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
-  const daysInMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
-  }
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDay = new Date(year, month, 1).getDay();
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
 
-  const firstDayOfMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay()
-  }
-
-  const handlePrevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
-  }
-
-  const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
-  }
-
-  const handleDateClick = (day) => {
-    const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`
-    setSelectedDate(dateKey)
-    setEventText(events[dateKey] || '')
-  }
-
-  const handleAddEvent = () => {
-    if (selectedDate && eventText.trim()) {
-      setEvents({ ...events, [selectedDate]: eventText })
-      setEventText('')
-      setSelectedDate(null)
+  const eventsByDay = {};
+  events.forEach(e => {
+    const d = new Date(e.start_time);
+    if (d.getFullYear() === year && d.getMonth() === month) {
+      const key = d.getDate();
+      if (!eventsByDay[key]) eventsByDay[key] = [];
+      eventsByDay[key].push(e);
     }
-  }
+  });
 
-  const handleLogin = () => {
-    if (password === 'ctk33') {
-      setIsAdmin(true)
-      setShowLogin(false)
-      setPassword('')
-    } else {
-      alert('Incorrect password')
-    }
-  }
+  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+  const goToToday = () => setCurrentDate(new Date());
 
-  const handleLogout = () => {
-    setIsAdmin(false)
-    setSelectedDate(null)
-    setEventText('')
-  }
+  const days = [];
+  for (let i = 0; i < firstDay; i++) days.push(null);
+  for (let d = 1; d <= daysInMonth; d++) days.push(d);
 
-  const renderCalendar = () => {
-    const days = daysInMonth(currentDate)
-    const firstDay = firstDayOfMonth(currentDate)
-    const calendarDays = []
+  const selectedEvents = selectedDate ? eventsByDay[selectedDate] || [] : [];
 
-    // Empty cells for days before the first day of the month
-    for (let i = 0; i < firstDay; i++) {
-      calendarDays.push(<div key={`empty-${i}`} className="calendar-day empty"></div>)
-    }
-
-    // Days of the month
-    for (let day = 1; day <= days; day++) {
-      const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`
-      const eventText = events[dateKey]
-      calendarDays.push(
-        <div
-          key={day}
-          className={`calendar-day ${eventText ? 'has-event' : ''}`}
-          onClick={() => handleDateClick(day)}
-        >
-          <div className="day-number">{day}</div>
-          {eventText && <div className="event-text">{eventText}</div>}
-        </div>
-      )
-    }
-
-    return calendarDays
-  }
+  if (loading) return <div className="flex justify-center py-32"><Loader2 className="animate-spin text-[#800000]" size={40} /></div>;
 
   return (
-  
-      <main className="calendar-main">
-        <motion.div
-          className="calendar-container"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <motion.h1
-            style={{ color: '#800000', textAlign: 'center', marginBottom: '20px', fontSize: '2.5rem' }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+    <main className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-[#234a33]">Parish Calendar</h1>
+            <p className="text-gray-500">Browse upcoming Masses, meetings, and events</p>
+          </div>
+          <Link
+            to="/events"
+            className="px-5 py-2 bg-[#800000] text-white rounded-lg font-semibold hover:bg-[#660000]"
           >
-            Church Calendar
-          </motion.h1>
-          <motion.div
-            className="admin-panel"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            {!isAdmin ? (
-              <motion.button
-                onClick={() => setShowLogin(true)}
-                className="admin-login-btn"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Admin Login
-              </motion.button>
-            ) : (
-              <motion.div
-                className="admin-controls"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4 }}
-              >
-                <span style={{ color: '#2d5016', marginRight: '10px' }}>Admin Mode</span>
-                <motion.button
-                  onClick={handleLogout}
-                  className="admin-logout-btn"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Logout
-                </motion.button>
-              </motion.div>
-            )}
-          </motion.div>
-          <AnimatePresence>
-            {showLogin && (
-              <motion.div
-                className="login-modal"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <motion.div
-                  className="login-form"
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <h3 style={{ color: '#2d5016', marginBottom: '15px' }}>Admin Login</h3>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter password"
-                    style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #8b4513', borderRadius: '4px' }}
-                  />
-                  <motion.button
-                    onClick={handleLogin}
-                    className="login-btn"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Login
-                  </motion.button>
-                  <motion.button
-                    onClick={() => { setShowLogin(false); setPassword(''); }}
-                    className="cancel-btn"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Cancel
-                  </motion.button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <motion.div
-            className="calendar-header"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            <motion.button
-              onClick={handlePrevMonth}
-              className="nav-button"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              { '<' }
-            </motion.button>
-            <h2 style={{ color: '#2d5016', margin: '0 20px' }}>
-              {currentDate.toLocaleString('default', { month: 'long' })} {currentDate.getFullYear()}
-            </h2>
-            <motion.button
-              onClick={handleNextMonth}
-              className="nav-button"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              { '>' }
-            </motion.button>
-          </motion.div>
-          <motion.div
-            className="calendar-grid"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-          >
-            <div className="calendar-day header">Sun</div>
-            <div className="calendar-day header">Mon</div>
-            <div className="calendar-day header">Tue</div>
-            <div className="calendar-day header">Wed</div>
-            <div className="calendar-day header">Thu</div>
-            <div className="calendar-day header">Fri</div>
-            <div className="calendar-day header">Sat</div>
-            {renderCalendar()}
-          </motion.div>
-          <AnimatePresence>
-            {selectedDate && isAdmin && (
-              <motion.div
-                className="event-form"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-              >
-                <h3 style={{ color: '#2d5016' }}>Add Event for {selectedDate.split('-')[2]}</h3>
-                <textarea
-                  value={eventText}
-                  onChange={(e) => setEventText(e.target.value)}
-                  placeholder="Enter event details..."
-                  rows="4"
-                  style={{ width: '100%', marginBottom: '10px', padding: '10px', border: '1px solid #8b4513', borderRadius: '4px' }}
-                />
-                <motion.button
-                  onClick={handleAddEvent}
-                  className="add-event-button"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Add Event
-                </motion.button>
-                <motion.button
-                  onClick={() => setSelectedDate(null)}
-                  className="cancel-button"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Cancel
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </main>
+            View Events List
+          </Link>
+        </div>
 
-  )
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {/* Header */}
+          <div className="bg-[#1e4a2a] text-white p-5 flex items-center justify-between">
+            <button
+              onClick={prevMonth}
+              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Previous month"
+            >
+              <ChevronLeft size={22} />
+            </button>
+            <div className="text-center">
+              <h2 className="text-xl md:text-2xl font-bold">
+                {currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
+              </h2>
+              {!isCurrentMonth && (
+                <button
+                  onClick={goToToday}
+                  className="text-xs text-white/70 hover:text-white underline mt-1"
+                >
+                  Back to current month
+                </button>
+              )}
+            </div>
+            <button
+              onClick={nextMonth}
+              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Next month"
+            >
+              <ChevronRight size={22} />
+            </button>
+          </div>
+
+          {/* Day headers */}
+          <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+              <div key={d} className="py-2 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Grid */}
+          <div className="grid grid-cols-7 gap-px bg-gray-200">
+            {days.map((day, i) => {
+              if (day === null) {
+                return <div key={`empty-${i}`} className="bg-gray-50 aspect-square" />;
+              }
+
+              const isToday = isCurrentMonth && day === today.getDate();
+              const dayEvents = eventsByDay[day] || [];
+              const hasEvents = dayEvents.length > 0;
+              const firstEventTitle = dayEvents[0]?.title || '';
+
+              return (
+                <button
+                  key={day}
+                  onClick={() => hasEvents && setSelectedDate(day)}
+                  className={`relative bg-white aspect-square p-1.5 md:p-2 text-left
+                              hover:bg-[#800000]/5 transition-colors
+                              ${hasEvents ? 'cursor-pointer' : 'cursor-default'}
+                              ${isToday ? 'ring-2 ring-inset ring-[#800000]' : ''}`}
+                >
+                  <span
+                    className={`inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 text-xs md:text-sm font-semibold rounded-full
+                      ${isToday ? 'bg-[#800000] text-white' : 'text-gray-700'}`}
+                  >
+                    {day}
+                  </span>
+                  {hasEvents && (
+                    <>
+                      {/* Desktop: show title */}
+                      <p className="hidden md:block text-[10px] leading-tight text-[#800000] mt-0.5 line-clamp-2 font-medium">
+                        {firstEventTitle}
+                      </p>
+                      {dayEvents.length > 1 && (
+                        <span className="hidden md:inline-block text-[9px] text-gray-400 mt-0.5">
+                          +{dayEvents.length - 1} more
+                        </span>
+                      )}
+                      {/* Mobile: dot indicator */}
+                      <div className="md:hidden flex justify-center gap-0.5 mt-1">
+                        {dayEvents.slice(0, 3).map((_, idx) => (
+                          <span key={idx} className="w-1 h-1 rounded-full bg-[#800000]" />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="flex justify-center gap-6 mt-4 text-xs text-gray-500">
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-[#800000]" />
+            Today
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#800000]" />
+            Has events
+          </span>
+        </div>
+      </div>
+
+      {/* Selected day modal */}
+      <AnimatePresence>
+        {selectedDate && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-40"
+              onClick={() => setSelectedDate(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+            >
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg pointer-events-auto max-h-[85vh] flex flex-col">
+                <div className="flex items-center justify-between p-5 border-b border-gray-200">
+                  <div>
+                    <h3 className="text-lg font-bold text-[#234a33]">
+                      {new Date(year, month, selectedDate).toLocaleDateString('en-US', {
+                        weekday: 'long', month: 'long', day: 'numeric'
+                      })}
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      {selectedEvents.length} {selectedEvents.length === 1 ? 'event' : 'events'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedDate(null)}
+                    className="p-2 rounded-lg hover:bg-gray-100"
+                    aria-label="Close"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="p-5 overflow-y-auto space-y-3">
+                  {selectedEvents.map(ev => (
+                    <div
+                      key={ev.id}
+                      className="border border-gray-200 rounded-xl p-4 hover:border-[#800000]/30 transition-colors"
+                    >
+                      <h4 className="font-bold text-[#234a33] mb-2">{ev.title}</h4>
+                      <div className="space-y-1 text-sm text-gray-600">
+                        <p className="flex items-center gap-2">
+                          <Clock size={14} className="text-[#800000]" />
+                          {new Date(ev.start_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                        {ev.location && (
+                          <p className="flex items-center gap-2">
+                            <MapPin size={14} className="text-[#800000]" />
+                            {ev.location}
+                          </p>
+                        )}
+                      </div>
+                      {ev.description && (
+                        <p className="text-sm text-gray-500 mt-2 line-clamp-2">{ev.description}</p>
+                      )}
+                      <Link
+                        to={`/events/${ev.id}`}
+                        className="text-sm text-[#800000] font-semibold hover:underline mt-2 inline-block"
+                      >
+                        View Details →
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </main>
+  );
 }
-
-export default Calendar

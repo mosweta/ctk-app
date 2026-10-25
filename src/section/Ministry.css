@@ -1,84 +1,228 @@
+/* Ministry Section — Get Involved homepage block
+ *
+ * Solid base green background (matches footer). No image, no overlay.
+ * Content is centered, with a header, group preview grid, and CTA.
+ */
+
 .ministry-section {
+  background-color: #1e4a2a;
+  padding: 4rem 1rem;
   position: relative;
-  width: 100%;
-  min-height: 60vh;
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
+  overflow: hidden;
 }
 
-.ministry-overlay {
+/* Subtle background pattern — very light diagonal lines to avoid flatness */
+.ministry-section::before {
+  content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.015) 0,
+    rgba(255, 255, 255, 0.015) 1px,
+    transparent 1px,
+    transparent 20px
+  );
+  pointer-events: none;
 }
 
-.ministry-content {
+/* Optional cross ornament in the corner — very subtle */
+.ministry-section::after {
+  content: '✝';
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+  font-size: 8rem;
+  opacity: 0.03;
+  color: white;
+  transform: rotate(15deg);
+  pointer-events: none;
+  font-family: serif;
+  line-height: 1;
+}
+
+.ministry-container {
+  max-width: 1000px;
+  margin: 0 auto;
   position: relative;
   z-index: 2;
+}
+
+/* Header */
+.ministry-header {
   text-align: center;
-  max-width: 900px;
-  padding: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.ministry-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.2rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(4px);
 }
 
 .ministry-title {
-  font-size:  clamp(2rem, 4vw, 3rem);
-  margin: 0 0 0.5rem 0;
-  font-weight: 450; 
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 700;
+  color: white;
+  margin: 0 0 1rem;
+  line-height: 1.15;
 }
 
 .ministry-sub {
-  margin: 0 0 1.25rem 0;
-  font-weight: 300; 
-  opacity: 0.98;
-  font-size:  clamp(0.95rem, 2vw, 1.05rem);
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
 }
 
-.ministry-buttons {
-  display: flex;
+/* Group preview grid */
+.ministry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 1rem;
-  justify-content: center;
-  margin-top: 1rem;
+  margin: 2.5rem 0;
 }
 
-.btn {
-  padding: 0.65rem 1.5rem;
-  border-radius: 6px;
+.ministry-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  overflow: hidden;
   cursor: pointer;
-  font-weight: 700;
-  border: none;
-  transition: all 180ms ease-in-out;
-  min-width: 120px;
-}
-
-.btn.primary {
-  background: #1a8a4b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    transform 0.2s ease;
+  text-align: center;
   color: white;
 }
 
-.btn.primary:hover {
-  background: #166f45; /* slightly darker */
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(22,111,69,0.12);
-  filter: hue-rotate(6deg) saturate(1.06) brightness(1.02);
+.ministry-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
-.btn.outline {
-  background: transparent;
-  color: #fff;
-  border: 2px solid rgba(255,255,255,0.85);
+.ministry-card-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
 }
 
-.btn.outline:hover {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,1);
-  transform: translateY(-3px);
-  filter: hue-rotate(6deg) saturate(1.06) brightness(1.02);
+.ministry-card-fallback {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.4);
 }
 
+.ministry-card-body {
+  padding: 0.85rem 0.75rem;
+  width: 100%;
+}
+
+.ministry-card-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  color: white;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ministry-card-category {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+/* CTA */
+.ministry-cta {
+  text-align: center;
+}
+
+.ministry-cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 2rem;
+  background: white;
+  color: #1e4a2a;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.ministry-cta-button:hover {
+  background: rgba(255, 255, 255, 0.92);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile */
 @media (max-width: 640px) {
-  .ministry-buttons { flex-direction: column; }
+  .ministry-section {
+    padding: 3rem 1rem;
+  }
+
+  .ministry-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .ministry-card-body {
+    padding: 0.6rem 0.5rem;
+  }
+
+  .ministry-card-name {
+    font-size: 0.75rem;
+  }
+}
+
+/* Touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .ministry-card:hover,
+  .ministry-cta-button:hover {
+    transform: none;
+  }
+
+  .ministry-card:active {
+    background: rgba(255, 255, 255, 0.18);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .ministry-card,
+  .ministry-cta-button {
+    transition: none;
+  }
 }

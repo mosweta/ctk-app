@@ -680,3 +680,37 @@
     color: var(--color-on-base);
   }
 }
+
+/* Make Quill match the admin theme */
+.ql-toolbar.ql-snow {
+  border-color: #e5e7eb !important;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  background-color: #f9fafb;
+}
+.ql-container.ql-snow {
+  border-color: #e5e7eb !important;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+/* Style the public output to match Tailwind's typography */
+.ql-editor-public ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+.ql-editor-public ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+.ql-editor-public p {
+  margin-bottom: 0.75rem;
+}
+.ql-editor-public strong {
+  font-weight: 700;
+  color: #111827;
+}

@@ -1,161 +1,123 @@
-import React from 'react'
-import { motion } from 'framer-motion'
-import Header from '../section/Header'
-import Footer from '../section/Footer'
-import './GetInvolved.css'
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { api } from '../lib/apiClient';
+import { Loader2, Users, MapPin, Calendar, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-const GetInvolved = () => {
-  const jumuiyaList = [
-    'Our Lady of Holy Rosary',
-    'St. Charles Lwanga',
-    'St. Mark',
-    'St. Gabriel',
-    'St. Leo the Great',
-    'St. Joan of Arc',
-    'Our Lady of Assumption',
-    'St. Lawrence of Rome',
-    'Our Lady Queen of Peace',
-    'Our Lady Help of Christians',
-    'St. Martin de Porres',
-    'St. Michael the Archangel',
-    'St. Martina of Rome',
-    'Holy Family',
-    'St. Peter and Paul',
-    'St. Joseph the Worker',
-    'St. Ignatius of Loyola',
-    'Our Lady of Mt. Carmel',
-    'St. Lucia',
-    'St. Claire of Assisi',
-    'St. Josemaria Escriva',
-    'St. Patrick',
-    'St. Faustina Kowalska',
-    'St. Teresa of Calcutta',
-    'St. Teresa of Avila',
-    'St. Maximillian Kolbe',
-    'St. Benedict',
-    'St. Monica',
-    'St. Anthony of Padua',
-    'st stephen',
-    'St Jude',
-    'St. Teresa of the Child Jesus',
-    'St. Clement of Rome',
-    'St. Perpetua',
-    'All Saints',
-    'Our Lady of Fatima',
-    'St. Francis of assisi',
-    'St. Maria Goretti', 
-    'St. Bakhita',
-    'St Vincent de Paul',
-    'St. Bernard',
-    'St. Thomas of Aquinas',
-    'St. Austin',
-    'St.Andrew Kaggwa',
-    'St. Mary Magdalene',
-    'St. Philomena',
-    'St. Agatha',
-    'St.Giovanni Antonio Farina',
-    'St. Catherine of Siena',
-    'St. Ignatius of Antioch',
-    'Our Lady of Mercy',
-    'St. Rita of Cascia',
-    'St. Peter Claver',
-    'our lady of lourdes',
-    'St. Christopher (Airport)',
-    'St. Nicholas of Antioch'
-  ]
+export default function GetInvolved() {
+  const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
 
-  const ecclesialGroups = [
-    'PMC',
-    'MYM',
-    'Youth',
-    'YCA',
-    'CMA',
-    'CWA',
-    'Couples for Christ',
-    'Charismatic',
-    'Divine Mercy',
-    'Sacred Heart',
-    'Christ the King Self Help Group',
-    'SDP-Social Development Program',
-    'CJPD-Catholic Justice and Peace Department'
-  ]
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await api.get('/groups');
+        setGroups(res.data);
+      } catch (err) { console.error(err); }
+      finally { setLoading(false); }
+    };
+    load();
+  }, []);
 
-  const choirList = [
-    'St. Cecilia Choir',
-    'St. Gregory the Great Choir',
-    'St. Dominic Savio',
-    'St. Kizito',
-    'YSC choir',
-    'St. Augustine'
-  ]
+  const filtered = filter === 'all' ? groups : groups.filter(g => g.category === filter);
+
+  const categories = [
+    { key: 'all', label: 'All Groups' },
+    { key: 'jumuiya', label: 'Jumuiyas' },
+    { key: 'ecclesial', label: 'Ecclesial Groups' },
+    { key: 'choir', label: 'Choirs' },
+  ];
 
   return (
-   
-      <main className="get-involved-main">
-        <div className="get-involved-header">
-          <motion.h1
-            style={{
-              color: '#86b18bff',
-              fontSize: '3rem',
-              fontWeight: 'bold',
-              fontFamily: 'Times New Roman, serif',
-              letterSpacing: '2px',
-              position: 'relative',
-              zIndex: 1
-            }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            Get Involved
-          </motion.h1>
+    <main className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#234a33] mb-2">Get Involved</h1>
+          <p className="text-gray-500 max-w-xl mx-auto">Find your community within the parish. Join a Jumuiya, Choir, or Ministry.</p>
         </div>
-        <div className="get-involved-content">
-          <motion.section
-            className="jumuiya-section"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2>List of Jumuiya </h2>
-            <ul className="jumuiya-list">
-              {jumuiyaList.map((jumuiya, index) => (
-                <li key={index}>{index + 1}. {jumuiya}</li>
-              ))}
-            </ul>
-          </motion.section>
 
-          <motion.section
-            className="groups-section"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <h2>Groups and Choirs</h2>
-            <div className="groups-content">
-              <h3>Groups</h3>
-              <h4>Ecclesial Groups</h4>
-              <ol className="jumuiya-list">
-                {ecclesialGroups.map((group, index) => (
-                  <li key={index}>{index + 1}. {group}</li>
-                ))}
-              </ol>
-              <h3>Choirs</h3>
-              <ol className="jumuiya-list">
-                {choirList.map((choir, index) => (
-                  <li key={index}>{index + 1}. {choir}</li>
-                ))}
-              </ol>
-            </div>
-            
-          </motion.section>
-          <div>
-              <p>To join any of these jumuiyas, groups or choirs, please contact the parish office.</p>
-            </div>
+        {/* Filters */}
+        <div className="flex flex-wrap justify-center gap-2 mb-10">
+          {categories.map(cat => (
+            <button
+              key={cat.key}
+              onClick={() => setFilter(cat.key)}
+              className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
+                filter === cat.key
+                  ? 'bg-[#800000] text-white'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-[#800000]'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
         </div>
-      </main>
 
-  )
+        {/* Content */}
+        {loading ? (
+          <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 text-[#800000] animate-spin" /></div>
+        ) : filtered.length === 0 ? (
+          <p className="text-center text-gray-500 py-20">No groups found in this category.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((group, i) => (
+              <motion.div
+                key={group.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all flex flex-col"
+              >
+                {/* Image / Fallback */}
+                <div className="aspect-[16/9] bg-[#1e4a2a] relative overflow-hidden">
+                  {group.image_url ? (
+                    <img src={group.image_url} alt={group.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Users className="text-white/20" size={64} />
+                    </div>
+                  )}
+                  <span className="absolute top-3 right-3 bg-white/95 text-[#800000] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    {group.category}
+                  </span>
+                </div>
+
+                {/* Content */}
+                <div className="p-5 flex-1 flex flex-col">
+                  <h3 className="text-xl font-bold text-[#234a33] mb-1">{group.name}</h3>
+                  {group.patron_saint && <p className="text-sm text-[#800000] font-medium mb-3">{group.patron_saint}</p>}
+                  
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4 flex-1">
+                    {group.short_description || 'A welcoming community within our parish.'}
+                  </p>
+
+                  {/* Meta */}
+                  <div className="space-y-1.5 mb-4 text-sm text-gray-500">
+                    {group.meeting_day && (
+                      <p className="flex items-center gap-2"><Calendar size={14} className="text-[#800000]" /> {group.meeting_day} {group.meeting_time}</p>
+                    )}
+                    {group.meeting_location && (
+                      <p className="flex items-center gap-2"><MapPin size={14} className="text-[#800000]" /> {group.meeting_location}</p>
+                    )}
+                    {group.coordinator_name && (
+                      <p className="flex items-center gap-2"><User size={14} className="text-[#800000]" /> {group.coordinator_name}</p>
+                    )}
+                  </div>
+
+                  <Link
+                    to={`/groups/${group.slug}`}
+                    className="text-[#800000] font-semibold text-sm hover:underline mt-auto"
+                  >
+                    Learn More →
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
 }
-
-export default GetInvolved

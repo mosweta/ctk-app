@@ -1,109 +1,97 @@
-import React from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { api } from '../lib/apiClient';
+import { Loader2, User } from 'lucide-react';
 
-import './Staff.css'
+export default function Staff() {
+  const [staff, setStaff] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-// Import your images (adjust the paths based on your actual file structure)
-import headPriest from '../assets/priest1.jpg'
-import priest1 from '../assets/priest2.jpg'
-import priest2 from '../assets/priest3.png'
-import secretary from '../assets/secretary.jpg'
-import catechist1 from '../assets/catechistm.png'
-import catechist2 from '../assets/catechistf.png'
-import bgImage from '../assets/bg1.jpeg'
-import accountant from '../assets/accountant.jpg'
+  useEffect(() => {
+    api.get('/staff')
+      .then(res => setStaff(res.data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
-const Staff = () => {
-  const staffMembers = [
-    {
-      title: 'Head Priest',
-      name: 'Fr. John Doe',
-      description: 'The head priest leads the spiritual guidance and oversees all church activities.',
-      image: headPriest
-    },
-    {
-      title: 'Priest',
-      name: 'Fr. Michael Smith',
-      description: 'Assists in conducting masses and providing pastoral care.',
-      image: priest1
-    },
-    {
-      title: 'Priest',
-      name: 'Fr. David Johnson',
-      description: 'Focuses on community outreach and youth ministry.',
-      image: priest2
-    },
-    {
-      title: 'Secretary',
-      name: 'Ms. Mary Williams',
-      description: 'Manages administrative tasks and coordinates church events.',
-      image: secretary
-    },
-    {
-      title: 'Accountant',
-      name: 'Mr. James Wilson',
-      description: 'Manages financial records and oversees budgeting for the church.',
-      image: accountant
-    },
-    {
-      title: 'Catechist',
-      name: 'Mr. Robert Brown',
-      description: 'Teaches religious education to children and adults.',
-      image: catechist1
-    },
-    {
-      title: 'Catechist',
-      name: 'Mrs. Linda Davis',
-      description: 'Supports catechetical programs and sacramental preparation.',
-      image: catechist2
-    },
-    
-  ]
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="animate-spin text-[#800000]" size={40} />
+      </div>
+    );
+  }
 
   return (
-    
-      <main className="staff-main">
-        <div className="staff-header" style={{ backgroundImage: `url(${bgImage})` }}>
-          <motion.h1
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-          >
+    <main className="min-h-screen bg-gray-50 py-16 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#234a33] mb-2">
             Our Staff
-          </motion.h1>
+          </h1>
+          <p className="text-gray-500">
+            The people who serve our parish community
+          </p>
         </div>
-        <div className="staff-container">
-          <div className="staff-grid">
-            {staffMembers.map((member, index) => (
-              <motion.div
-                key={index}
-                className="staff-card"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <div className="staff-image-wrapper">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="staff-image"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/150?text=No+Image';
-                    }}
-                  />
-                </div>
-                <h3>{member.title}</h3>
-                <h4>{member.name}</h4>
-                <p>{member.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </main>
-      
-   
-  )
-}
 
-export default Staff
+        {staff.length === 0 ? (
+          <p className="text-center text-gray-500 py-20">
+            Staff information will be available soon.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {staff.map((member, i) => {
+              const showPhoto = member.show_photo && member.image_url;
+              return (
+                <motion.div
+                  key={member.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-100
+                             p-8 text-center flex flex-col items-center
+                             hover:shadow-lg hover:-translate-y-1
+                             transition-all duration-300"
+                >
+                  {/* Photo or fallback avatar — centered, circular, bordered */}
+                  <div
+                    className="w-36 h-36 md:w-40 md:h-40 rounded-full overflow-hidden mb-5
+                               border-4 border-[#800000] shadow-lg
+                               flex items-center justify-center
+                               bg-[#800000]/10"
+                  >
+                    {showPhoto ? (
+                      <img
+                        src={member.image_url}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <User size={56} className="text-[#800000]/50" />
+                    )}
+                  </div>
+
+                  {/* Title above name, matching original design */}
+                  <h3 className="text-xl font-bold text-[#800000] mb-1">
+                    {member.title}
+                  </h3>
+                  <h4 className="text-lg font-semibold text-[#234a33] mb-4 pb-3
+                                 border-b border-gray-200 w-full">
+                    {member.name}
+                  </h4>
+
+                  {member.description && (
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {member.description}
+                    </p>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

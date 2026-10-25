@@ -26,14 +26,16 @@ const TimeSection = ({ title, times, icon }) => {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 }}
+            // Added slight layout fix for multiline lists
+            style={{ alignItems: 'flex-start' }} 
           >
-            <div className="home-time-day">
+            <div className="home-time-day" style={{ minWidth: '140px', paddingTop: '4px' }}>
               <FiCalendar className="home-time-icon-small" />
               <span>{time.day}</span>
             </div>
-            <div className="home-time-schedule">
+            <div className="home-time-schedule" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {time.time.split(',').map((t, i) => (
-                <span key={i} className="home-time-badge">
+                <span key={i} className="home-time-badge" style={{ display: 'block', width: '100%' }}>
                   {t.trim()}
                 </span>
               ))}
@@ -41,13 +43,6 @@ const TimeSection = ({ title, times, icon }) => {
           </motion.div>
         ))}
       </div>
-
-      {/* Simple note for each section
-      <div className="home-time-note">
-        {title === "Mass Times" && <span><FiSun /> Sundays at both CTK and St. John Tassia Weekdays at CTK </span>}
-        {title === "Confession Times" && <span><Cross /> In CTK </span>}
-        {title === "Adoration Times" && <span><FiHeart /> In CTK or St. John Tassia</span>}
-      </div> */}
     </motion.div>
   );
 };
@@ -57,8 +52,18 @@ const ChurchTime = ({ showOnly }) => {
   
   const times = {
     mass: [
-      { day: 'Sunday', time: '7:00 AM, 9:00 AM, 11:00 AM, 1:00 PM' },
-      { day: 'Monday - Saturday', time: '7:00 AM' }
+      { 
+        day: 'Sunday (CTK)', 
+        time: '1st: 7:00 AM - 9:00 AM, 2nd: 9:00 AM - 11:00 AM, 3rd: 11:00 AM - 1:00 PM, 4th: 1:00 PM - 3:00 PM' 
+      },
+      { 
+        day: 'Sunday (SJTE)', 
+        time: '1st: 8:00 AM - 10:00 AM, 2nd: 10:00 AM - 12:00 PM' 
+      },
+      { 
+        day: 'Monday - Saturday', 
+        time: '7:00 AM (CTK)' 
+      }
     ],
     confession: [
       { day: 'Saturday', time: '4:00 PM - 5:30 PM' }
@@ -83,7 +88,6 @@ const ChurchTime = ({ showOnly }) => {
   return (
     <section className="home-church-time">
       <div className="home-church-time-container">
-        {/* Simple Header - Matching other sections */}
         <motion.div 
           className="home-section-header"
           initial={{ opacity: 0, y: 20 }}
@@ -91,14 +95,12 @@ const ChurchTime = ({ showOnly }) => {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          
           <h2 className="home-section-title">Service Times</h2>
           <p className="home-section-subtitle">
             Join us for prayer and worship throughout the week
           </p>
         </motion.div>
 
-        {/* Simple Tabs */}
         <motion.div 
           className="home-time-tabs"
           initial={{ opacity: 0, y: 20 }}
@@ -118,7 +120,6 @@ const ChurchTime = ({ showOnly }) => {
           ))}
         </motion.div>
 
-        {/* Content */}
         <motion.div 
           className="home-time-content"
           initial={{ opacity: 0, y: 20 }}
@@ -154,7 +155,6 @@ const ChurchTime = ({ showOnly }) => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Simple Footer Link */}
         <motion.div 
           className="home-time-footer"
           initial={{ opacity: 0 }}
@@ -162,9 +162,6 @@ const ChurchTime = ({ showOnly }) => {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          {/* <a href="/full-schedule" className="home-time-link">
-            View Full Schedule →
-          </a> */}
         </motion.div>
       </div>
     </section>

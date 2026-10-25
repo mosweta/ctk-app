@@ -1,430 +1,109 @@
-// Note: This component initializes `expandedSections` from
-// `announcementData` via a useEffect. ESLint's react-hooks/set-state-in-effect
-// rule flags this pattern. The clean fix is lazy useState initialization,
-// which F4 will implement when this page is migrated to the shared
-// component pattern and connected to the readings API.
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useApi } from '../hooks/useApi';
+import { Loader2, BookOpen, Calendar } from 'lucide-react';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Header from '../section/Header';
-import Footer from '../section/Footer';
-import './announcements.css';
-import { 
-  FiBell, 
-  FiCalendar, 
-  FiClock, 
-  FiChevronDown, 
-  FiChevronUp,
-  FiShare2,
-  FiCopy,
-  FiCheck,
-  FiPrinter,
-  FiDownload,
-  FiArrowLeft,
-  FiArrowRight
-} from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+export default function Announcements() {
+  const { data: bulletins, loading, error } = useApi('/bulletins');
+  const [lang, setLang] = useState('en');
 
-const Announcements = () => {
-  const [expandedSections, setExpandedSections] = useState({});
-  const [copied, setCopied] = useState(false);
- 
-  const announcementsRef = useRef(null);
-
-  // Initialize all sections as expanded by default
-
-
-  // Announcement data based on your sample
-  const announcementData = {
-    date: "SUNDAY 29TH MARCH 2026",
-    sections: [
-      {
-        title: "TODAY'S ANNOUNCEMENTS",
-        items: [
-          {
-            type: "text",
-            content: "Today is the Palm Sunday. "
-          },
-          {
-            type: "text",
-            content: "We thank all who have animated today's Mass:",
-            subItems: [
-              "St. Thomas of Aquinas SCC.",
-              "St. Teresa of Avila SCC",
-              "St. Teresa of Calcutta SCC",
-              "St. Rita SCC",
-              "God bless you all."
-            ]
-          },
-          {
-            type: "text",
-            content: " There will be rehearsals for those who will take the readings for Easter Triduum at 3pm at CTK Church and at 12pm at SJTE church.  "
-          },
-          {
-            type: "text",
-            content: "There will be election for the local church council after the 4th Mass in CTK Church. Those to do the election are the newly elected moderators, treasurers and secretaries of each jumuia and moderators of groups who were elected last Sunday. "
-          }
-        ]
-      },
-      {
-        title: "THIS WEEK'S ANNOUNCEMENTS",
-        items: [
-          {
-            type: "text",
-            content: "We shall have Easter talk, confessions and Mass from tomorrow, Monday 29/3/2026 to Wednesday 1/4/2026 at CTK church from 7pm. Kindly note that we shall not have morning Masses this week, i.e., from Monday to Saturday."
-          }
-        ]
-      },
-      {
-        title: "NEXT SUNDAY'S ANNOUNCEMENTS – 5TH APRIL 2026",
-        items: [
-          {
-            type: "text",
-            content: "It will be the Easter Sunday."
-          },
-          {
-            type: "text",
-            content: " It shall be our 1st tithing Sunday for the month of April 2026. Please pick the tithe envelopes from our ushers or use the paybill number 653472, account name Tithe."
-          },
-          
-          {
-            type: "text",
-            content: "The following will animate Masses in CTK;",
-            
-            massSchedule: [
-              
-              { mass: "1st Mass", group: "St. Vincent de Paul SCC" },
-              { mass: "2nd Mass", group: "All Saints SCC" },
-              { mass: "3rd Mass", group: "Charismatic" }
-
-            ]
-          },
-          {
-            type: "text",
-            content: "The following will animate Masses at St. John the Evangelist;",
-            
-            massSchedule: [
-              { mass: "1st Mass", group: "Couples for Christ" },
-              { mass: "2nd Mass", group: "St.Benard" },
-              
-
-            ]
-          },
-          {
-            noteIndex: 'There will be no 1pm Mass at CTK. PMC Masses will be as usual'
-          },
-          {
-            type: "subheading",
-            content: "Easter Monday"
-          },
-          {
-            type: "text",
-            content:"Monday 6th April, will be Easter Monday. His Grace, Most Rev. Philip Anyolo will visit us to celebrate Mass for us and launch the strategic plan for our Parish. Please let us all purpose to attend Mass from 8:30am at CTK Church animated by CWA."  
-          }
-        ]
-      },
-      {
-        title: "OTHER ANNOUNCEMENTS",
-        items: [
-          {
-            type: "subheading",
-            content: "BIRTHDAYS"
-          },
-          {
-            type: "text",
-            content: "Those who have celebrated their birthdays this month are requested to come forward for blessing."
-          },
-          {
-            type: "subheading",
-            content: "NEW PAYBILL"
-          },
-          {
-            type: "text",
-            content: "Beginning the month of April 2026 we are all advised that we shall be using paybill 4039655 for sadaka, host & wine, stole fees, and 2nd collections while paybill number 653472 shall remain for tithe, jumuiya & group savings and donations."
-          }
-        ]
-      }
-    ]
-  };
-
-useEffect(() => {
-  const initialExpanded = {};
-  announcementData.sections.forEach((_, index) => {
-    initialExpanded[index] = true;
-  });
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  setExpandedSections(initialExpanded);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
-
-  // Toggle section expansion
-  const toggleSection = (index) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }));
-  };
-
-  // Expand all sections
-  const expandAll = () => {
-    const allExpanded = {};
-    announcementData.sections.forEach((_, index) => {
-      allExpanded[index] = true;
-    });
-    setExpandedSections(allExpanded);
-  };
-
-  // Collapse all sections
-  const collapseAll = () => {
-    const allCollapsed = {};
-    announcementData.sections.forEach((_, index) => {
-      allCollapsed[index] = false;
-    });
-    setExpandedSections(allCollapsed);
-  };
-
-  // Copy announcements to clipboard
-  const copyToClipboard = async () => {
-    const text = generateTextVersion();
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
-  // Generate text version for copying
-  const generateTextVersion = () => {
-    let text = `CHRIST THE KING PARISH – EMBAKASI\n${announcementData.date}\n\n`;
-    announcementData.sections.forEach(section => {
-      text += `${section.title}\n${'='.repeat(section.title.length)}\n\n`;
-      section.items.forEach(item => {
-        if (item.type === 'text') {
-          text += `${item.content}\n\n`;
-          if (item.subItems) {
-            item.subItems.forEach(sub => {
-              text += `  ${sub}\n`;
-            });
-            text += '\n';
-          }
-          if (item.notes) {
-            text += `NB: ${item.notes.join(' ')}\n\n`;
-          }
-          if (item.massSchedule) {
-            item.massSchedule.forEach(mass => {
-              text += `  ${mass.mass}: ${mass.group}\n`;
-            });
-            text += '\n';
-          }
-        } else if (item.type === 'subheading') {
-          text += `${item.content}\n\n`;
-        } else if (item.type === 'list' && item.items) {
-          item.items.forEach(listItem => {
-            text += `${listItem}\n`;
-          });
-          text += '\n';
-        }
-      });
-    });
-    return text;
-  };
-
-
-
-  // Print announcements
-  const handlePrint = () => {
-    window.print();
-  };
-
-  // Share announcements
-  const handleShare = async () => {
-    const text = generateTextVersion();
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Parish Announcements',
-          text: text,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.error('Share failed:', err);
-      }
-    } else {
-      copyToClipboard();
-    }
-  };
-
-  // Animation variants
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.5 }
-    }
-  };
+  const filtered = (bulletins || []).filter((b) => b.language === lang);
+  const latest = filtered[0];
 
   return (
-  
-      <main className="announcements-page">
-        <section className="announcements-section" ref={announcementsRef}>
-          <div className="announcements-container">
-            
-
-            {/* Header */}
-            <motion.div 
-              className="section-header"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-             
-              <h1 className="section-title">Parish Announcements</h1>
-              <p className="section-date">{announcementData.date}</p>
-              <p className="section-subtitle">
-                Stay updated with the latest news and events from our parish
-              </p>
-            </motion.div>
-
-            {/* Action Buttons */}
-            <motion.div 
-              className="action-buttons"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <div className="action-group">
-                <button className="action-btn" onClick={expandAll}>
-                  Expand All
-                </button>
-                <button className="action-btn" onClick={collapseAll}>
-                  Collapse All
-                </button>
-              </div>
-              <div className="action-group">
-                <button className="action-btn" onClick={copyToClipboard}>
-                  {copied ? <FiCheck /> : <FiCopy />}
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
-                
-                <button className="action-btn" onClick={handlePrint}>
-                  <FiPrinter /> Print
-                </button>
-                <button className="action-btn" onClick={handleShare}>
-                  <FiShare2 /> Share
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Announcements Content */}
-            <motion.div 
-              className="announcements-content"
-              initial="hidden"
-              animate="visible"
-              variants={{
-                visible: { transition: { staggerChildren: 0.1 } }
-              }}
-            >
-              {announcementData.sections.map((section, sectionIndex) => (
-                <motion.div 
-                  key={sectionIndex}
-                  className="announcement-section"
-                  variants={fadeInUp}
-                >
-                  <div 
-                    className="section-header-clickable"
-                    onClick={() => toggleSection(sectionIndex)}
-                  >
-                    <h2 className="section-title-announcement">{section.title}</h2>
-                    <button className="expand-btn" aria-label={expandedSections[sectionIndex] ? "Collapse section" : "Expand section"}>
-                      {expandedSections[sectionIndex] ? <FiChevronUp /> : <FiChevronDown />}
-                    </button>
-                  </div>
-                  
-                  <AnimatePresence>
-                    {expandedSections[sectionIndex] && (
-                      <motion.div 
-                        className="section-content"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        {section.items.map((item, itemIndex) => (
-                          <div key={itemIndex} className="announcement-item">
-                            {item.type === 'text' && (
-                              <>
-                                <p className="item-text">{item.content}</p>
-                                {item.subItems && (
-                                  <ul className="sub-list">
-                                    {item.subItems.map((sub, subIndex) => (
-                                      <li key={subIndex}>{sub}</li>
-                                    ))}
-                                  </ul>
-                                )}
-                                {item.notes && (
-                                  <div className="note-box">
-                                    <strong>NB:</strong>
-                                    <ul>
-                                      {item.notes.map((note, noteIndex) => (
-                                        <li key={noteIndex}>{note}</li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                )}
-                                {item.massSchedule && (
-                                  <div className="mass-schedule">
-                                    {item.massSchedule.map((mass, massIndex) => (
-                                      <div key={massIndex} className="mass-item">
-                                        <span className="mass-name">{mass.mass}</span>
-                                        <span className="mass-group">{mass.group}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </>
-                            )}
-                            
-                            {item.type === 'subheading' && (
-                              <h3 className="subheading">{item.content}</h3>
-                            )}
-                            
-                            {item.type === 'list' && item.items && (
-                              <ul className="list-items">
-                                {item.items.map((listItem, listIndex) => (
-                                  <li key={listIndex}>{listItem}</li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* Footer Note */}
-            <motion.div 
-              className="announcements-footer"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <p className="footer-text">
-                <FiCalendar className="footer-icon" />
-                For more information, please visit the parish office or check the notice board
-              </p>
-              
-            </motion.div>
+    <main className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        
+        {/* Header with language toggle */}
+        <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-4">
+          <div>
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#800000]/10 text-[#800000] mb-3">
+              <BookOpen size={28} />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-[#234a33]">Parish Bulletin</h1>
           </div>
-        </section>
-      </main>
 
+          <div className="flex bg-white rounded-lg shadow-sm p-1 border border-gray-200">
+            <button onClick={() => setLang('en')} className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${lang === 'en' ? 'bg-[#800000] text-white' : 'text-gray-500 hover:text-[#800000]'}`}>English</button>
+            <button onClick={() => setLang('sw')} className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${lang === 'sw' ? 'bg-[#800000] text-white' : 'text-gray-500 hover:text-[#800000]'}`}>Kiswahili</button>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 text-[#800000] animate-spin" /></div>
+        ) : error ? (
+          <div className="bg-red-50 text-red-700 p-6 rounded-xl text-center border border-red-100">{error}</div>
+        ) : !latest ? (
+          <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-gray-500">No bulletins available in {lang === 'en' ? 'English' : 'Kiswahili'} yet.</p>
+          </div>
+        ) : (
+          <motion.article initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            
+            <div className="bg-[#1e4a2a] text-white p-8 md:p-10 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2">{latest.title}</h2>
+              <p className="flex items-center justify-center gap-2 text-white/80 text-sm uppercase tracking-wider">
+                <Calendar size={16} />
+                {new Date(latest.sunday_date).toLocaleDateString(lang === 'en' ? 'en-US' : 'sw-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
+
+            <div className="p-6 md:p-10 space-y-10">
+              {latest.sections?.map((section, sIdx) => (
+                <section key={sIdx}>
+                  <h3 className="text-lg md:text-xl font-bold text-[#800000] uppercase tracking-wide border-b-2 border-[#800000]/20 pb-2 mb-4">
+                    {section.heading}
+                  </h3>
+                  <ol className="list-[lower-alpha] pl-6 space-y-6 text-gray-700 leading-relaxed">
+                    {section.items?.map((item, iIdx) => (
+                      <li key={iIdx}>
+                        
+                        {/* Render the rich text HTML securely */}
+                        <div 
+                          className="ql-editor-public whitespace-pre-line"
+                          dangerouslySetInnerHTML={{ __html: item.html || item.text || '' }} 
+                        />
+
+                        {/* Render the Mass Table */}
+                        {item.massTable && item.massTable.length > 0 && (
+                          <div className="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+                            <table className="w-full text-sm border-collapse">
+                              <thead>
+                                <tr className="bg-[#1e4a2a] text-white text-xs uppercase tracking-wider">
+                                  <th className="p-3 text-left border-r border-white/10 w-1/4">Mass</th>
+                                  <th className="p-3 text-left border-r border-white/10">CTK</th>
+                                  <th className="p-3 text-left">SJTE</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {item.massTable.map((row, rIdx) => {
+                                  // Skip empty rows
+                                  if (!row.ctk && !row.sjte) return null;
+                                  return (
+                                    <tr key={rIdx} className="border-b last:border-0 hover:bg-gray-50">
+                                      <td className="p-3 font-semibold text-[#234a33] bg-gray-50/50">{row.mass}</td>
+                                      <td className="p-3 text-gray-700">{row.ctk || '-'}</td>
+                                      <td className="p-3 text-gray-700">{row.sjte || '-'}</td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              ))}
+            </div>
+            
+            <div className="bg-gray-50 p-6 text-center text-sm text-gray-500 border-t">
+              Wishing you all a blessed week!
+            </div>
+          </motion.article>
+        )}
+      </div>
+    </main>
   );
-};
-
-export default Announcements;
+}

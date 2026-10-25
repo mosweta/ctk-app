@@ -1,273 +1,306 @@
-// src/section/Hero.jsx
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import './Hero.css';
-import { FiChevronLeft, FiChevronRight, FiPlay, FiCalendar } from 'react-icons/fi';
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiPlay,
+  FiPause,
+  FiArrowDown,
+  FiCalendar,
+} from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
-// Import all your image variants
-// Church Images
 import churchDesktop from '../assets/church.jpg';
-import churchTablet from '../assets/church.jpg';
-import churchMobileLandscape from '../assets/church.jpg';
-import churchMobilePortrait from '../assets/churchP.png';
-
-// Bishops Images
+import churchMobile from '../assets/churchP.png';
 import bishopsDesktop from '../assets/churchL.png';
-import bishopsTablet from '../assets/churchL.png';
-import bishopsMobileLandscape from '../assets/bishops.jpg';
-import bishopsMobilePortrait from '../assets/churchE.jpeg';
-
-// CMA Images
+import bishopsMobile from '../assets/churchE.jpeg';
 import cmaDesktop from '../assets/cma.jpg';
-import cmaTablet from '../assets/cma.jpg';
-import cmaMobileLandscape from '../assets/cma.jpg';
-import cmaMobilePortrait from '../assets/cmaP.png';
-
-// Groto Images
+import cmaMobile from '../assets/cmaP.png';
 import grotoDesktop from '../assets/Groto.jpg';
-import grotoTablet from '../assets/Groto.jpg';
-import grotoMobileLandscape from '../assets/Groto.jpg';
-import grotoMobilePortrait from '../assets/Groto.jpg';
 
-const Hero = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+/** Auto-advance interval in milliseconds. */
+const ROTATE_MS = 8000;
 
+const SLIDES = [
+  {
+    id: 1,
+    title: 'Welcome to Christ the King',
+    subtitle: 'A Eucharistic Community',
+    description:
+      'A community striving for holiness through a rich sacramental life and serving God in our daily lives.',
+    primary: { label: 'Join Us This Sunday', to: '/mass-times', icon: FiCalendar },
+    secondary: { label: 'Our History', to: '/history', icon: FiPlay },
+    img: { desktop: churchDesktop, mobile: churchMobile },
+  },
+  {
+    id: 2,
+    title: "Experience God's Presence",
+    subtitle: 'Daily Mass & Adoration',
+    description:
+      'Deepen your faith through daily Eucharist, confession, and perpetual adoration.',
+    primary: { label: 'Mass Schedule', to: '/mass-times', icon: FiCalendar },
+    secondary: { label: 'Adoration Times', to: '/adoration', icon: FiPlay },
+    img: { desktop: bishopsDesktop, mobile: bishopsMobile },
+  },
+  {
+    id: 3,
+    title: 'Growing Together in Faith',
+    subtitle: 'Community & Fellowship',
+    description:
+      'Join our vibrant community with programs for children, youth, and adults.',
+    primary: { label: 'Our Ministries', to: '/get-involved', icon: FiCalendar },
+    secondary: { label: 'Get Involved', to: '/get-involved', icon: FiPlay },
+    img: { desktop: cmaDesktop, mobile: cmaMobile },
+  },
+  {
+    id: 4,
+    title: 'Prepare Your Heart',
+    subtitle: 'Season of Lent',
+    description:
+      'Join us for special Lenten services, confessions, and Easter celebrations.',
+    primary: { label: 'Announcements', to: '/announcements', icon: FiCalendar },
+    secondary: { label: 'Confession Times', to: '/confession', icon: FiPlay },
+    img: { desktop: grotoDesktop, mobile: grotoDesktop },
+  },
+];
 
+/**
+ * Foreground content card. Renders one slide's badge, title,
+ * description, and two CTA buttons inside the glassmorph panel.
+ *
+ * Proportional sizing:
+ *   - min-h ensures the card occupies a substantial, consistent slice
+ *     of the hero at every breakpoint.
+ *   - flex flex-col justify-center vertically centers the content
+ *     inside that taller card so extra height becomes even padding.
+ *   - Wider max-w on large screens keeps the card from looking tall
+ *     and skinny once the height increases.
+ *
+ * Description styling:
+ *   - White at 95% opacity with a strong shadow for legibility.
+ *   - text-base → text-xl across breakpoints.
+ *   - leading-loose and tracking-wide for generous vertical rhythm.
+ *   - max-w-none so it fills the card, matching the title width.
+ *
+ * Buttons:
+ *   - rounded-xl (matches site button system).
+ *   - font-bold and text-base → text-lg.
+ *   - Taller (py-3.5 → py-4) and wider (px-6 → px-8) for presence.
+ *   - Icons sized explicitly to match the larger text.
+ */
+function SlideContent({ slide, shouldReduceMotion }) {
+  return (
+    <motion.div
+      key={slide.id}
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.3 }}
+      className="w-full mx-auto text-center text-white
+                 max-w-[min(1000px,92%)]
+                 min-h-[420px] sm:min-h-[480px] lg:min-h-[540px]
+                 flex flex-col justify-center
+                 bg-black/20 backdrop-blur-[3px]
+                 rounded-[20px] border border-white/10
+                 px-6 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-16"
+    >
+      {/* Subtitle badge — pill is fine here, it's a label not an action */}
+      <span
+        className="self-center inline-block text-white uppercase tracking-[3px]
+                   bg-[rgba(128,0,0,0.2)] rounded-full
+                   border border-white/20 backdrop-blur-[5px]
+                   mb-4 px-3 py-1 text-xs sm:px-4 sm:py-1.5 sm:text-sm"
+      >
+        {slide.subtitle}
+      </span>
 
-  
+      <h1
+        className="font-bold text-white leading-[1.1] mb-5
+                   text-3xl sm:text-5xl lg:text-6xl
+                   [text-shadow:2px_2px_8px_rgba(0,0,0,0.5)]"
+      >
+        {slide.title}
+      </h1>
 
-  // Slide data with all image variants
-  const slides = [
-    {
-      id: 1,
-      title: "Welcome to Christ the King",
-      subtitle: "A Eucharistic Community",
-      description: "A community striving for holiness through a rich sacramental life and serving God in our daily lives.",
-      ctaPrimary: { text: "Join Us This Sunday", link: "/mass-times" },
-      ctaSecondary: { text: "About Us", link: "/history" },
-      images: {
-        desktop: churchDesktop,
-        tablet: churchTablet,
-        mobileLandscape: churchMobileLandscape,
-        mobilePortrait: churchMobilePortrait
-      }
-    },
-    {
-      id: 2,
-      title: "Experience God's Presence",
-      subtitle: "Daily Mass & Adoration",
+      {/* Description — white, larger, well-spaced, fills the card */}
+      <p
+        className="mx-auto text-white/95 tracking-wide mb-8
+                   text-base sm:text-lg lg:text-xl
+                   leading-loose max-w-none
+                   [text-shadow:1px_1px_6px_rgba(0,0,0,0.7)]"
+      >
+        {slide.description}
+      </p>
 
-      ctaPrimary: { text: "Mass Schedule", link: "/mass-times" },
-      ctaSecondary: { text: "Adoration Times", link: "/adoration" },
-      images: {
-        desktop: bishopsDesktop,
-        tablet: bishopsTablet,
-        mobileLandscape: bishopsMobileLandscape,
-        mobilePortrait: bishopsMobilePortrait
-      }
-    },
-    {
-      id: 3,
-      title: "Growing Together in Faith",
-      subtitle: "Community & Fellowship",
-     
-      
-      ctaPrimary: { text: "Our Ministries", link: "/readmore" },
-      ctaSecondary: { text: "Get Involved", link: "/get-involved" },
-      images: {
-        desktop: cmaDesktop,
-        tablet: cmaTablet,
-        mobileLandscape: cmaMobileLandscape,
-        mobilePortrait: cmaMobilePortrait
-      }
-    },
-    {
-      id: 4,
-      title: "Prepare Your Heart",
-      subtitle: "Season of Lent",
-      
-      
-      ctaPrimary: { text: "Announcements", link: "/announcements" },
-      ctaSecondary: { text: "Confession Times", link: "/confession" },
-      images: {
-        desktop: grotoDesktop,
-        tablet: grotoTablet,
-        mobileLandscape: grotoMobileLandscape,
-        mobilePortrait: grotoMobilePortrait
-      }
-    }
-  ];
+      <div className="flex flex-wrap gap-4 justify-center">
+        <Link
+          to={slide.primary.to}
+          className="inline-flex items-center gap-2.5 rounded-xl font-bold
+                     transition-all duration-300
+                     bg-primary text-white shadow-[0_4px_15px_rgba(139,26,26,0.3)]
+                     hover:bg-primary-hover hover:-translate-y-0.5
+                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white
+                     focus-visible:ring-offset-2 focus-visible:ring-offset-black/20
+                     px-6 py-3.5 text-base sm:px-8 sm:py-4 sm:text-lg"
+        >
+          <slide.primary.icon aria-hidden="true" className="w-5 h-5 sm:w-6 sm:h-6" />
+          {slide.primary.label}
+        </Link>
 
-  // Auto-play functionality
+        <Link
+          to={slide.secondary.to}
+          className="inline-flex items-center gap-2.5 rounded-xl font-bold
+                     transition-all duration-300
+                     bg-white/10 text-white border-2 border-white/50 backdrop-blur-[5px]
+                     hover:bg-white/20 hover:border-white hover:-translate-y-0.5
+                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white
+                     focus-visible:ring-offset-2 focus-visible:ring-offset-black/20
+                     px-6 py-3.5 text-base sm:px-8 sm:py-4 sm:text-lg"
+        >
+          <slide.secondary.icon aria-hidden="true" className="w-5 h-5 sm:w-6 sm:h-6" />
+          {slide.secondary.label}
+        </Link>
+      </div>
+    </motion.div>
+  );
+}
+
+export default function Hero() {
+  const [index, setIndex] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(true);
+  const shouldReduceMotion = useReducedMotion();
+
+  const next = useCallback(() => {
+    setIndex((i) => (i + 1) % SLIDES.length);
+  }, []);
+
+  const prev = useCallback(() => {
+    setIndex((i) => (i - 1 + SLIDES.length) % SLIDES.length);
+  }, []);
+
+  const goTo = (i) => setIndex(i);
+
   useEffect(() => {
-    let interval;
-    if (isAutoPlaying) {
-      interval = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % slides.length);
-      }, 8000);
-    }
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, slides.length]);
+    if (!autoPlay || shouldReduceMotion) return;
+    const timer = setInterval(next, ROTATE_MS);
+    return () => clearInterval(timer);
+  }, [autoPlay, shouldReduceMotion, next]);
 
-  const nextSlide = () => {
-    setIsAutoPlaying(false);
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
-
-  const prevSlide = () => {
-    setIsAutoPlaying(false);
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
-
-  const goToSlide = (index) => {
-    setIsAutoPlaying(false);
-    setCurrentSlide(index);
-  };
-
-  const currentSlideData = slides[currentSlide];
+  const slide = SLIDES[index];
 
   return (
-    <section id="hero" className="hero-section" aria-label="Hero section">
-      {/* Background Slider with Responsive Images */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentSlide}
-          className="hero-background"
-          initial={{ scale: 1.1, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 1.1, opacity: 0 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-        >
-          {/* Method 1: Using Picture Element (Recommended) */}
-          <picture>
-            {/* Mobile Portrait (2:3 ratio) */}
-            <source 
-              media="(max-width: 640px) and (orientation: portrait)"
-              srcSet={currentSlideData.images.mobilePortrait}
-            />
-            {/* Mobile Landscape (16:9 ratio) */}
-            <source 
-              media="(max-width: 640px) and (orientation: landscape)"
-              srcSet={currentSlideData.images.mobileLandscape}
-            />
-            {/* Tablet (16:9 ratio) */}
-            <source 
-              media="(max-width: 1024px)"
-              srcSet={currentSlideData.images.tablet}
-            />
-            {/* Desktop (16:9 ratio) */}
-            <img 
-              src={currentSlideData.images.desktop}
-              alt={currentSlideData.title}
-              className="hero-image"
-            />
-          </picture>
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Content */}
-      <div className="hero-content-wrapper">
-        <motion.div
-          className="hero-content"
-          key={currentSlide}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -30 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <motion.span 
-            className="hero-subtitle"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+    <section
+      aria-label="Parish highlights"
+      className="relative w-full min-h-screen flex flex-col overflow-hidden bg-neutral-900"
+    >
+      {/* Background images — crossfade between slides */}
+      <div className="absolute inset-0">
+        <AnimatePresence>
+          <motion.div
+            key={slide.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: 'easeInOut' }}
+            className="absolute inset-0"
           >
-            {currentSlideData.subtitle}
-          </motion.span>
-
-          <motion.h1 
-            className="hero-title"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-          >
-            {currentSlideData.title}
-          </motion.h1>
-
-          <motion.p 
-            className="hero-description"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-          >
-            {currentSlideData.description}
-          </motion.p>
-
-          <motion.div 
-            className="hero-buttons"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1 }}
-          >
-            <a href={currentSlideData.ctaPrimary.link} className="btn btn-primary">
-              <FiCalendar className="btn-icon" />
-              {currentSlideData.ctaPrimary.text}
-            </a>
-            <a href={currentSlideData.ctaSecondary.link} className="btn btn-secondary">
-              <FiPlay className="btn-icon" />
-              {currentSlideData.ctaSecondary.text}
-            </a>
+            <picture>
+              <source media="(max-width: 768px)" srcSet={slide.img.mobile} />
+              <img
+                src={slide.img.desktop}
+                alt=""
+                className="w-full h-full object-cover"
+                loading={index === 0 ? 'eager' : 'lazy'}
+              />
+            </picture>
           </motion.div>
-        </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* Navigation Arrows - Hide on mobile */}
-      <button 
-        className="nav-arrow prev" 
-        onClick={prevSlide}
-        aria-label="Previous slide"
-      >
-        <FiChevronLeft />
-      </button>
-      <button 
-        className="nav-arrow next" 
-        onClick={nextSlide}
-        aria-label="Next slide"
-      >
-        <FiChevronRight />
-      </button>
+      {/* Main content area */}
+      <div className="relative z-10 flex-1 flex items-center justify-center px-4 py-16">
+        <AnimatePresence mode="wait">
+          <SlideContent
+            key={slide.id}
+            slide={slide}
+            shouldReduceMotion={shouldReduceMotion}
+          />
+        </AnimatePresence>
+      </div>
 
-      {/* Slide Indicators */}
-      <div className="slide-indicators">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            className={`indicator ${currentSlide === index ? 'active' : ''}`}
-            onClick={() => goToSlide(index)}
-            aria-label={`Go to slide ${index + 1}`}
+      {/* Controls footer */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 pb-6 flex items-center justify-between">
+        {/* Scroll indicator — desktop only */}
+        <a
+          href="#mission"
+          aria-label="Scroll to next section"
+          className="hidden md:flex flex-col items-center gap-2 text-white/80
+                     hover:text-white transition-colors"
+        >
+          <span
+            className="text-xs uppercase tracking-widest"
+            style={{ writingMode: 'vertical-lr' }}
           >
-            <span className="indicator-line"></span>
-          </button>
-        ))}
+            Scroll
+          </span>
+          <FiArrowDown size={20} />
+        </a>
+
+        {/* Dot indicators — centered */}
+        <div className="flex-1 flex justify-center gap-2 md:gap-3">
+          {SLIDES.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => goTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              aria-current={i === index ? 'true' : 'false'}
+              className="p-1 group"
+            >
+              <span
+                className={`block h-1 rounded-full transition-all duration-300 ${
+                  i === index
+                    ? 'bg-primary w-6 md:w-10'
+                    : 'bg-white/50 group-hover:bg-white w-4 md:w-6'
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+
+        {/* Play/pause — desktop only, circular icon button */}
+        <button
+          onClick={() => setAutoPlay((p) => !p)}
+          aria-label={autoPlay ? 'Pause slideshow' : 'Resume slideshow'}
+          className="hidden md:flex w-10 h-10 items-center justify-center rounded-full
+                     bg-white/10 backdrop-blur-[5px] border-2 border-white/30 text-white
+                     hover:bg-primary/80 hover:border-white transition-all duration-300"
+        >
+          {autoPlay ? <FiPause /> : <FiPlay />}
+        </button>
       </div>
 
-      {/* Pause/Play Button */}
-      <button 
-        className="pause-play-btn"
-        onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-        aria-label={isAutoPlaying ? "Pause slideshow" : "Play slideshow"}
+      {/* Previous / Next arrows — desktop only, circular icon buttons */}
+      <button
+        onClick={prev}
+        aria-label="Previous slide"
+        className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-20
+                   w-12 h-12 items-center justify-center rounded-full
+                   bg-white/10 backdrop-blur-[5px] border-2 border-white/30 text-white
+                   hover:bg-primary/80 hover:border-white hover:scale-110
+                   transition-all duration-300"
       >
-        <span className={`pause-icon ${isAutoPlaying ? '' : 'hidden'}`}>⏸</span>
-        <span className={`play-icon ${isAutoPlaying ? 'hidden' : ''}`}>▶</span>
+        <FiChevronLeft size={24} />
       </button>
-
-      {/* Scroll Indicator */}
-      <a href="#mission" className="scroll-indicator">
-        <span className="scroll-text">Scroll</span>
-        <span className="scroll-line"></span>
-      </a>
+      <button
+        onClick={next}
+        aria-label="Next slide"
+        className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-20
+                   w-12 h-12 items-center justify-center rounded-full
+                   bg-white/10 backdrop-blur-[5px] border-2 border-white/30 text-white
+                   hover:bg-primary/80 hover:border-white hover:scale-110
+                   transition-all duration-300"
+      >
+        <FiChevronRight size={24} />
+      </button>
     </section>
   );
-};
-
-export default Hero;
+}
