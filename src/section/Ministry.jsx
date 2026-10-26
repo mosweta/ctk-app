@@ -1,53 +1,85 @@
 /**
- * Ministry (homepage section).
+ * Ministry — homepage "Get Involved" section.
  *
- * Promotes community involvement. Fetches the first few groups from
- * the database and shows them as thumbnail previews, then links to
- * /get-involved for the full directory.
+ * Fetches public groups from GET /groups and shows up to five as
+ * preview cards, then links to /get-involved for the full directory.
  *
- * Background: solid base green (bg-base) so the section is visually
- * distinct without an image. Matches the footer color, creating a
- * bookend feel with the bottom of the page.
+ * API contract:
+ *   The backend returns public groups ordered by category, then by
+ *   display_order. We preserve that order and slice to the first
+ *   five. No client-side re-sort or random selection.
+ *
+ * Background:
+ *   Solid base green (matches the footer). Kept as-is because the
+ *   design intent is a bookend with the bottom of the page.
+ *
+ * States:
+ *   loading   — accessible spinner
+ *   error     — message + retry
+ *   empty     — "No groups" message, CTA still available
+ *   success   — grid of up to five cards + CTA
+ *
+ * The card grid and CTA remain visible in error and empty states so
+ * the visitor can still reach /get-involved.
  */
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { api } from '../lib/apiClient';
-import { Users, ArrowRight } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Users, ArrowRight, Loader2 } from 'lucide-react';
+import { useApi } from '../hooks/useApi';
 import './Ministry.css';
 
-export default function Ministry() {
-  const [groups, setGroups] = useState([]);
-  const navigate = useNavigate();
+/** Maximum number of group previews on the homepage. */
+const PREVIEW_LIMIT = 5;
 
-  useEffect(() => {
-    api
-      .get('/groups')
-      .then((res) => setGroups((res.data || []).slice(0, 5)))
-      .catch(console.error);
-  }, []);
+export default function Ministry() {
+  const { data, loading, error, refetch } = useApi('/groups');
+  const shouldReduceMotion = useReducedMotion();
+
+  // Defensive: the hook may return non-array data.
+  const allGroups = Array.isArray(data) ? data : [];
+  const groups = allGroups.slice(0, PREVIEW_LIMIT);
+
+  // Shared animation gates. Undefined when reduced motion is preferred
+  // so Framer Motion skips the animation entirely.
+  const sectionInitial = shouldReduceMotion ? false : { opacity: 0, y: 40 };
+  const containerVariants = shouldReduceMotion
+    ? undefined
+    : {
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: { staggerChildren: 0.08 },
+        },
+      };
+  const cardVariants = shouldReduceMotion
+    ? undefined
+    : {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 },
+      };
+  const cardHover = shouldReduceMotion ? undefined : { y: -4 };
 
   return (
     <motion.section
       id="ministry"
       className="ministry-section"
-      initial={{ opacity: 0, y: 40 }}
+      initial={sectionInitial}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.8, ease: 'easeOut' }}
+      transition={{ duration: shouldReduceMotion ? 0 : 0.8, ease: 'easeOut' }}
     >
       <div className="ministry-container">
         {/* Header */}
         <motion.div
           className="ministry-header"
-          initial={{ opacity: 0, y: 20 }}
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
           <span className="ministry-badge">
-            <Users size={16} />
+            <Users size={16} aria-hidden="true" />
             Community
           </span>
           <h2 className="ministry-title">Get Involved</h2>
@@ -57,66 +89,129 @@ export default function Ministry() {
           </p>
         </motion.div>
 
-        {/* Group preview strip */}
-        {groups.length > 0 && (
+        {/* Loading */}
+        {loading && (
+          <div
+            className="ministry-state"
+            role="status"
+            aria-live="polite"
+          >
+            <Loader2
+              className="ministry-spinner"
+              size={32}
+              aria-hidden="true"
+            />
+            <p className="ministry-state-text">Loading groups…</p>
+          </div>
+        )}
+
+        {/* Error */}
+        {!loading && error && (
+          <div className="ministry-state" role="alert">
+            <p className="ministry-state-text">
+              We couldn’t load groups right now. Please try again.
+            </p>
+            <button
+              type="button"
+              className="ministry-retry"
+              onClick={refetch}
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {/* Empty */}
+        {!loading && !error && groups.length === 0 && (
+          <div className="ministry-state">
+            <p className="ministry-state-text">
+              Group listings are being updated. Please check back soon.
+            </p>
+          </div>
+        )}
+
+        {/* Grid */}
+        {!loading && !error && groups.length > 0 && (
           <motion.div
             className="ministry-grid"
-            initial="hidden"
+            initial={shouldReduceMotion ? false : 'hidden'}
             whileInView="visible"
             viewport={{ once: true }}
-            variants={{
-              hidden: { opacity: 0 },
-              visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
-            }}
+            variants={containerVariants}
           >
-            {groups.map((group) => (
-              <motion.button
-                key={group.id}
-                onClick={() => navigate(`/groups/${group.slug}`)}
-                className="ministry-card"
-                aria-label={`View ${group.name}`}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                whileHover={{ y: -4 }}
-              >
-                {group.image_url ? (
-                  <img
-                    src={group.image_url}
-                    alt=""
-                    className="ministry-card-image"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="ministry-card-fallback">
-                    <Users size={28} />
+            {groups.map((group) => {
+              const hasSlug =
+                typeof group.slug === 'string' && group.slug.length > 0;
+              const cardContent = (
+                <>
+                  {group.image_url ? (
+                    <img
+                      src={group.image_url}
+                      alt=""
+                      className="ministry-card-image"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div
+                      className="ministry-card-fallback"
+                      aria-hidden="true"
+                    >
+                      <Users size={28} />
+                    </div>
+                  )}
+                  <div className="ministry-card-body">
+                    <h3 className="ministry-card-name">
+                      {group.name || 'Unnamed group'}
+                    </h3>
+                    {group.category && (
+                      <p className="ministry-card-category">
+                        {group.category}
+                      </p>
+                    )}
                   </div>
-                )}
-                <div className="ministry-card-body">
-                  <h3 className="ministry-card-name">{group.name}</h3>
-                  <p className="ministry-card-category">{group.category}</p>
-                </div>
-              </motion.button>
-            ))}
+                </>
+              );
+
+              // Render as a Link when the group has a usable slug;
+              // otherwise render a non-interactive div so users cannot
+              // navigate to /groups/undefined.
+              return hasSlug ? (
+                <motion.div
+                  key={group.id || group.slug}
+                  variants={cardVariants}
+                  whileHover={cardHover}
+                >
+                  <Link
+                    to={`/groups/${group.slug}`}
+                    className="ministry-card ministry-card--link"
+                  >
+                    {cardContent}
+                  </Link>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={group.id || group.name}
+                  variants={cardVariants}
+                >
+                  <div className="ministry-card">{cardContent}</div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
 
-        {/* CTA */}
+        {/* CTA — always visible, including in error and empty states */}
         <motion.div
           className="ministry-cta"
-          initial={{ opacity: 0 }}
+          initial={shouldReduceMotion ? false : { opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
-          <button
-            onClick={() => navigate('/get-involved')}
-            className="ministry-cta-button"
-          >
+          <Link to="/get-involved" className="ministry-cta-button">
             Explore All Groups
-            <ArrowRight size={18} />
-          </button>
+            <ArrowRight size={18} aria-hidden="true" />
+          </Link>
         </motion.div>
       </div>
     </motion.section>

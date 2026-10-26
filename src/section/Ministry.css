@@ -1,54 +1,67 @@
-/* Ministry Section — Get Involved homepage block
- *
- * Solid base green background (matches footer). No image, no overlay.
- * Content is centered, with a header, group preview grid, and CTA.
- */
+/* ==========================================================================
+   Ministry — homepage "Get Involved" section
+
+   Solid base green background. Matches the footer, creating a visual
+   bookend at the bottom of the page.
+
+   All colors come from semantic tokens in src/index.css. The
+   translucent card surfaces are derived with color-mix() against
+   currentColor so they adapt between light and dark modes without
+   hardcoded hex values or rgba() tuples.
+   ========================================================================== */
+
+/* ---- Section wrapper -------------------------------------------------- */
 
 .ministry-section {
-  background-color: #1e4a2a;
-  padding: 4rem 1rem;
   position: relative;
   overflow: hidden;
+  padding: 4rem 1rem;
+  background-color: var(--color-base);
+  color: var(--color-on-base);
 }
 
-/* Subtle background pattern — very light diagonal lines to avoid flatness */
+/* Subtle diagonal-line pattern to keep the large flat area from
+   reading as dead space. Uses currentColor so the pattern adapts to
+   whatever --color-on-base resolves to. */
 .ministry-section::before {
   content: '';
   position: absolute;
   inset: 0;
   background-image: repeating-linear-gradient(
     45deg,
-    rgba(255, 255, 255, 0.015) 0,
-    rgba(255, 255, 255, 0.015) 1px,
+    color-mix(in srgb, currentColor 3%, transparent) 0,
+    color-mix(in srgb, currentColor 3%, transparent) 1px,
     transparent 1px,
     transparent 20px
   );
   pointer-events: none;
 }
 
-/* Optional cross ornament in the corner — very subtle */
+/* Faint cross ornament in the corner. Matches the Mission section's
+   treatment. Pseudo-element content is not exposed to assistive tech. */
 .ministry-section::after {
   content: '✝';
   position: absolute;
   right: 2rem;
   bottom: 2rem;
+  font-family: var(--font-serif);
   font-size: 8rem;
-  opacity: 0.03;
-  color: white;
+  line-height: 1;
+  color: currentColor;
+  opacity: 0.04;
   transform: rotate(15deg);
   pointer-events: none;
-  font-family: serif;
-  line-height: 1;
 }
 
 .ministry-container {
-  max-width: 1000px;
-  margin: 0 auto;
   position: relative;
   z-index: 2;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-/* Header */
+/* ---- Header ----------------------------------------------------------- */
+
 .ministry-header {
   text-align: center;
   margin-bottom: 2.5rem;
@@ -59,36 +72,94 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 1.2rem;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50px;
-  color: rgba(255, 255, 255, 0.9);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.15em;
   margin-bottom: 1rem;
   backdrop-filter: blur(4px);
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  color: currentColor;
 }
 
 .ministry-title {
+  margin: 0 0 1rem;
   font-size: clamp(2rem, 4.5vw, 3rem);
   font-weight: 700;
-  color: white;
-  margin: 0 0 1rem;
   line-height: 1.15;
+  color: currentColor;
 }
 
 .ministry-sub {
+  margin: 0 auto;
+  max-width: 600px;
   font-size: clamp(0.95rem, 2vw, 1.1rem);
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.85);
-  max-width: 600px;
-  margin: 0 auto;
   line-height: 1.6;
+  color: currentColor;
+  opacity: 0.85;
 }
 
-/* Group preview grid */
+/* ---- Loading / error / empty states ---------------------------------- */
+
+.ministry-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.ministry-state-text {
+  margin: 0;
+  max-width: 32rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: currentColor;
+  opacity: 0.9;
+}
+
+.ministry-spinner {
+  color: currentColor;
+  opacity: 0.8;
+  animation: ministry-spin 0.9s linear infinite;
+}
+
+@keyframes ministry-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ministry-retry {
+  padding: 0.55rem 1.25rem;
+  border-radius: 50px;
+  border: 2px solid currentColor;
+  background: transparent;
+  color: currentColor;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.ministry-retry:hover {
+  background-color: currentColor;
+  /* Text color inside the button inverts: base background behind it. */
+  color: var(--color-base);
+}
+
+.ministry-retry:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* ---- Card grid -------------------------------------------------------- */
+
 .ministry-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -96,42 +167,54 @@
   margin: 2.5rem 0;
 }
 
+/* The visible card is the <Link> or <div> inside the motion wrapper.
+   Sizing and visual treatment live on .ministry-card; the wrapper is
+   transparent to layout so the grid lays out the cards directly. */
 .ministry-card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 14px;
-  overflow: hidden;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 0;
-  transition: background-color 0.2s ease, border-color 0.2s ease,
-    transform 0.2s ease;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  background-color: color-mix(in srgb, currentColor 8%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  color: currentColor;
   text-align: center;
-  color: white;
+  text-decoration: none;
+  transition: background-color 200ms ease, border-color 200ms ease;
 }
 
 .ministry-card:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.35);
+  background-color: color-mix(in srgb, currentColor 14%, transparent);
+  border-color: color-mix(in srgb, currentColor 35%, transparent);
+}
+
+.ministry-card:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* Non-interactive fallback card (no slug). No hover lift, no pointer
+   cursor, no focus ring — it is informational only. */
+.ministry-card:not(.ministry-card--link) {
+  cursor: default;
 }
 
 .ministry-card-image {
+  display: block;
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  display: block;
 }
 
 .ministry-card-fallback {
-  width: 100%;
-  aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.4);
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: color-mix(in srgb, currentColor 6%, transparent);
+  color: color-mix(in srgb, currentColor 40%, transparent);
 }
 
 .ministry-card-body {
@@ -140,11 +223,11 @@
 }
 
 .ministry-card-name {
+  margin: 0 0 0.25rem;
   font-size: 0.85rem;
   font-weight: 600;
-  margin: 0 0 0.25rem;
-  color: white;
   line-height: 1.25;
+  color: currentColor;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -152,17 +235,20 @@
 }
 
 .ministry-card-category {
+  margin: 0;
   font-size: 0.7rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin: 0;
+  color: currentColor;
+  opacity: 0.65;
 }
 
-/* CTA */
+/* ---- CTA -------------------------------------------------------------- */
+
 .ministry-cta {
   text-align: center;
+  margin-top: 2rem;
 }
 
 .ministry-cta-button {
@@ -170,24 +256,34 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.85rem 2rem;
-  background: white;
-  color: #1e4a2a;
   border: none;
   border-radius: 50px;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease,
-    box-shadow 0.2s ease;
+  text-decoration: none;
+  /* Inverted against the section: white pill in light mode (on dark
+     green), light pill in dark mode (on lifted green). Text uses the
+     section's own base color so the contrast pair is guaranteed. */
+  background-color: var(--color-on-base);
+  color: var(--color-base);
+  transition: background-color 200ms ease, transform 150ms ease,
+    box-shadow 200ms ease;
 }
 
 .ministry-cta-button:hover {
-  background: rgba(255, 255, 255, 0.92);
+  background-color: color-mix(in srgb, var(--color-on-base) 92%, transparent);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Mobile */
+.ministry-cta-button:focus-visible {
+  outline: 2px solid var(--color-on-base);
+  outline-offset: 3px;
+}
+
+/* ---- Mobile ----------------------------------------------------------- */
+
 @media (max-width: 640px) {
   .ministry-section {
     padding: 3rem 1rem;
@@ -207,22 +303,41 @@
   }
 }
 
-/* Touch devices */
+/* ---- Touch devices ---------------------------------------------------- */
+
 @media (hover: none) and (pointer: coarse) {
-  .ministry-card:hover,
-  .ministry-cta-button:hover {
-    transform: none;
+  /* On touch devices :hover can stick after a tap. Reset the hover
+     visuals so the card does not look "stuck" in the pressed state. */
+  .ministry-card:hover {
+    background-color: color-mix(in srgb, currentColor 8%, transparent);
+    border-color: color-mix(in srgb, currentColor 18%, transparent);
   }
 
-  .ministry-card:active {
-    background: rgba(255, 255, 255, 0.18);
+  .ministry-cta-button:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: var(--color-on-base);
+  }
+
+  /* Touch feedback replaces the lift. */
+  .ministry-card--link:active {
+    background-color: color-mix(in srgb, currentColor 18%, transparent);
   }
 }
 
-/* Reduced motion */
+/* ---- Reduced motion --------------------------------------------------- */
+
 @media (prefers-reduced-motion: reduce) {
   .ministry-card,
-  .ministry-cta-button {
+  .ministry-cta-button,
+  .ministry-retry {
     transition: none;
+  }
+
+  /* Spinner still communicates "loading" via text; freeze the rotation
+     so it does not conflict with the reduced-motion preference. */
+  .ministry-spinner {
+    animation: none;
+    opacity: 0.6;
   }
 }
