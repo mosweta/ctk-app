@@ -3,16 +3,16 @@
  *
  * Displays all upcoming published events as a card grid. Each card
  * shows the event image (or fallback), date badge, title, time, and
- * location, with a "Learn More" link to the detail page.
+ * location, with a "Details" link to the detail page.
  *
- * Data is fetched from GET /api/events?upcoming=true. Loading, error,
- * and empty states use the shared UI components.
+ * This component uses the `.events__*` CSS classes from Event.css to
+ * ensure the cards are visually identical to the homepage section.
  */
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin } from 'lucide-react';
+import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
 import { api } from '../lib/apiClient';
 import {
   PageHeader,
@@ -20,27 +20,70 @@ import {
   ErrorState,
   EmptyState,
 } from '../components/ui';
+import '../section/Event.css'; // Import the homepage event styles
+
+function formatTime(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return 'Time TBA';
+  return d.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function formatBadge(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return { month: 'TBA', day: '?' };
+  return {
+    month: d.toLocaleDateString('en-US', { month: 'short' }),
+    day: d.getDate(),
+  };
+}
+
+function eventAlt(event) {
+  const d = new Date(event.start_time);
+  const dateStr = Number.isNaN(d.getTime())
+    ? 'Date TBA'
+    : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  return event.title ? `${event.title} — ${dateStr}` : `Event on ${dateStr}`;
+}
 
 export default function EventsList() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const shouldReduceMotion = useReducedMotion();
+
+  const loadEvents = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.get('/events?upcoming=true');
+      setEvents(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      setError(err.message || 'Failed to load events');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await api.get('/events?upcoming=true');
-        setEvents(res.data || []);
-      } catch (err) {
-        setError(err.message || 'Failed to load events');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+    loadEvents();
+  }, [loadEvents]);
+
+  const containerVariants = shouldReduceMotion
+    ? undefined
+    : {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+      };
+
+  const itemVariants = shouldReduceMotion
+    ? undefined
+    : {
+        hidden: { opacity: 0, y: 16 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+      };
 
   return (
     <main className="min-h-screen bg-background pb-16">
@@ -52,13 +95,13 @@ export default function EventsList() {
         <Link
           to="/calendar"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-lg
-                     bg-white text-primary font-semibold
-                     hover:bg-white/90 transition-colors
+                     bg-surface text-primary font-semibold shadow-sm
+                     hover:bg-surface/90 transition-colors
                      focus-visible:outline-none focus-visible:ring-2
                      focus-visible:ring-white focus-visible:ring-offset-2
                      focus-visible:ring-offset-primary"
         >
-          <Calendar size={18} />
+          <Calendar size={18} aria-hidden="true" />
           View Calendar
         </Link>
       </PageHeader>
@@ -70,7 +113,7 @@ export default function EventsList() {
           <ErrorState
             title="Could not load events"
             message={error}
-            onRetry={() => window.location.reload()}
+            onRetry={loadEvents}
           />
         ) : events.length === 0 ? (
           <EmptyState
@@ -79,85 +122,73 @@ export default function EventsList() {
             message="There are no events scheduled at the moment. Please check back soon."
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((event, i) => (
-              <motion.article
-                key={event.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="card-hover overflow-hidden flex flex-col group"
-              >
-                {/* Image */}
-                <div className="aspect-video bg-base relative overflow-hidden">
-                  {event.image_url ? (
-                    <img
-                      src={event.image_url}
-                      alt={event.title}
-                      className="w-full h-full object-cover
-                                 transition-transform duration-300
-                                 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Calendar size={48} className="text-white/30" />
+          <motion.ul
+            className="events__grid"
+            initial={shouldReduceMotion ? false : 'hidden'}
+            animate="visible"
+            variants={containerVariants}
+          >
+            {events.map((event) => {
+              const badge = formatBadge(event.start_time);
+
+              return (
+                <motion.li
+                  key={event.id || `${event.title}-${event.start_time}`}
+                  className="events__card"
+                  variants={itemVariants}
+                >
+                  <div className="events__card-media">
+                    {event.image_url ? (
+                      <img
+                        src={event.image_url}
+                        alt={eventAlt(event)}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="events__card-fallback" aria-hidden="true">
+                        <Calendar size={40} />
+                      </div>
+                    )}
+                    <div className="events__card-badge">
+                      <span className="events__card-badge-month">
+                        {badge.month}
+                      </span>
+                      <span className="events__card-badge-day">
+                        {badge.day}
+                      </span>
                     </div>
-                  )}
-                  {/* Date badge */}
-                  <div className="absolute top-3 right-3 bg-surface text-primary
-                                  rounded-lg px-3 py-1 text-center shadow-md">
-                    <p className="text-xs font-bold uppercase leading-none mb-0.5">
-                      {new Date(event.start_time).toLocaleString('en-US', {
-                        month: 'short',
-                      })}
-                    </p>
-                    <p className="text-xl font-bold leading-none">
-                      {new Date(event.start_time).getDate()}
-                    </p>
                   </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-5 flex-1 flex flex-col">
-                  <h2 className="text-xl font-bold text-heading mb-3 line-clamp-2">
-                    {event.title}
-                  </h2>
-
-                  <div className="space-y-2 text-sm text-body mb-4">
-                    <p className="flex items-center gap-2">
-                      <Clock size={15} className="text-primary shrink-0" />
-                      {new Date(event.start_time).toLocaleString('en-US', {
-                        weekday: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                  <div className="events__card-body">
+                    <h3 className="events__card-title">
+                      {event.title}
+                    </h3>
+                    <p className="events__card-meta">
+                      <Clock size={14} aria-hidden="true" />
+                      {formatTime(event.start_time)}
                     </p>
                     {event.location && (
-                      <p className="flex items-center gap-2">
-                        <MapPin size={15} className="text-primary shrink-0" />
+                      <p className="events__card-meta">
+                        <MapPin size={14} aria-hidden="true" />
                         {event.location}
                       </p>
                     )}
+                    {event.description && (
+                      <p className="events__card-description">
+                        {event.description}
+                      </p>
+                    )}
+                    <Link
+                      to={`/events/${event.id}`}
+                      className="events__card-link"
+                    >
+                      Details
+                      <ArrowRight size={14} aria-hidden="true" />
+                    </Link>
                   </div>
-
-                  {event.description && (
-                    <p className="text-sm text-muted leading-relaxed line-clamp-3 mb-4">
-                      {event.description}
-                    </p>
-                  )}
-
-                  <Link
-                    to={`/events/${event.id}`}
-                    className="mt-auto inline-flex items-center gap-1
-                               text-primary font-semibold text-sm
-                               hover:underline"
-                  >
-                    Learn More →
-                  </Link>
-                </div>
-              </motion.article>
-            ))}
-          </div>
+                </motion.li>
+              );
+            })}
+          </motion.ul>
         )}
       </div>
     </main>
