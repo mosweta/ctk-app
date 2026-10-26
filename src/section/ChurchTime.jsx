@@ -1,171 +1,247 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+/**
+ * ChurchTime — homepage "Service Times" section.
+ *
+ * Renders Mass, Confession, Adoration, and Rosary as an accessible
+ * ARIA tablist. Each tab reveals a card listing the days and times for
+ * that service.
+ *
+ * Also used by /mass-times, /adoration, and /confession via the
+ * `showOnly` prop. When `showOnly` is set, that service is the initial
+ * tab. The component still allows switching tabs after mount, matching
+ * the pre-existing behavior on those routes.
+ *
+ * Theming:
+ *   All colors come from semantic tokens in src/index.css. Because
+ *   those tokens redefine themselves under .dark, light and dark mode
+ *   are handled by the existing theme system — this component does
+ *   not read the theme, listen for changes, or hold theme state.
+ *
+ * Reduced motion:
+ *   useReducedMotion() disables Framer Motion animations for users
+ *   who set prefers-reduced-motion. The CSS guards its transitions
+ *   under the same preference.
+ */
+
+import { useCallback, useRef } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { FiClock, FiCalendar, FiHeart } from 'react-icons/fi';
+import { Cross } from 'lucide-react';
 import './ChurchTime.css';
-import { FiClock, FiCalendar, FiHeart, FiSun } from 'react-icons/fi';
-import { Cross } from "lucide-react";
 
-const TimeSection = ({ title, times, icon }) => {
-  return (
-    <motion.div
-      className="home-time-section"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
-    >
-      <div className="home-time-header">
-        <span className="home-time-icon">{icon}</span>
-        <h3>{title}</h3>
-      </div>
-
-      <div className="home-time-list">
-        {times.map((time, index) => (
-          <motion.div
-            key={index}
-            className="home-time-item"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            // Added slight layout fix for multiline lists
-            style={{ alignItems: 'flex-start' }} 
-          >
-            <div className="home-time-day" style={{ minWidth: '140px', paddingTop: '4px' }}>
-              <FiCalendar className="home-time-icon-small" />
-              <span>{time.day}</span>
-            </div>
-            <div className="home-time-schedule" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {time.time.split(',').map((t, i) => (
-                <span key={i} className="home-time-badge" style={{ display: 'block', width: '100%' }}>
-                  {t.trim()}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
-  );
+/**
+ * Service data.
+ *
+ * `days` is a list of { day, times } entries. `times` is an array of
+ * strings, so each schedule is a discrete item — no comma-splitting
+ * during render.
+ *
+ * DO NOT modify names, days, or times without verifying against the
+ * parish bulletin.
+ */
+const SERVICES = {
+  mass: {
+    label: 'Mass',
+    panelTitle: 'Mass Times',
+    Icon: FiClock,
+    days: [
+      {
+        day: 'Sunday (CTK)',
+        times: [
+          '1st: 7:00 AM - 9:00 AM',
+          '2nd: 9:00 AM - 11:00 AM',
+          '3rd: 11:00 AM - 1:00 PM',
+          '4th: 1:00 PM - 3:00 PM',
+        ],
+      },
+      {
+        day: 'Sunday (SJTE)',
+        times: ['1st: 8:00 AM - 10:00 AM', '2nd: 10:00 AM - 12:00 PM'],
+      },
+      {
+        day: 'Monday - Saturday',
+        times: ['7:00 AM (CTK)'],
+      },
+    ],
+  },
+  confession: {
+    label: 'Confession',
+    panelTitle: 'Confession Times',
+    Icon: Cross,
+    days: [{ day: 'Saturday', times: ['4:00 PM - 5:30 PM'] }],
+  },
+  adoration: {
+    label: 'Adoration',
+    panelTitle: 'Adoration Times',
+    Icon: FiHeart,
+    days: [{ day: 'Last Thursday', times: ['7:00 PM - 8:30 PM'] }],
+  },
+  rosary: {
+    label: 'Rosary',
+    panelTitle: 'Rosary Times',
+    Icon: Cross,
+    days: [{ day: 'Monday - Saturday', times: ['6:25 AM - 7:00 AM'] }],
+  },
 };
 
-const ChurchTime = ({ showOnly }) => {
-  const [activeTab, setActiveTab] = React.useState(showOnly || 'mass');
-  
-  const times = {
-    mass: [
-      { 
-        day: 'Sunday (CTK)', 
-        time: '1st: 7:00 AM - 9:00 AM, 2nd: 9:00 AM - 11:00 AM, 3rd: 11:00 AM - 1:00 PM, 4th: 1:00 PM - 3:00 PM' 
-      },
-      { 
-        day: 'Sunday (SJTE)', 
-        time: '1st: 8:00 AM - 10:00 AM, 2nd: 10:00 AM - 12:00 PM' 
-      },
-      { 
-        day: 'Monday - Saturday', 
-        time: '7:00 AM (CTK)' 
-      }
-    ],
-    confession: [
-      { day: 'Saturday', time: '4:00 PM - 5:30 PM' }
-    ],
-    adoration: [
-      { day: 'Last Thursday', time: '7:00 PM - 8:30 PM' }
-    ]
-  };
+/** Stable tab order. Keys must match entries in SERVICES. */
+const SERVICE_ORDER = ['mass', 'confession', 'adoration', 'rosary'];
 
-  const tabs = [
-    { key: 'mass', label: 'Mass', icon: <FiClock /> },
-    { key: 'confession', label: 'Confession', icon: <Cross /> },
-    { key: 'adoration', label: 'Adoration', icon: <FiHeart /> }
-  ];
+export default function ChurchTime({ showOnly }) {
+  // `showOnly` seeds the initial tab; validated so a stale or mistyped
+  // value cannot break rendering.
+  const initialTab = SERVICES[showOnly] ? showOnly : 'mass';
+  const [activeTab, setActiveTab] = useState(initialTab);
 
-  const sectionIcons = {
-    mass: <FiClock />,
-    confession: <Cross />,
-    adoration: <FiHeart />
-  };
+  const shouldReduceMotion = useReducedMotion();
+  const activeService = SERVICES[activeTab];
+
+  // Refs to tab buttons so arrow navigation can move focus without a
+  // global id lookup.
+  const tabRefs = useRef({});
+
+  /**
+   * WAI-ARIA tabs keyboard behavior:
+   *   ArrowRight / ArrowLeft cycle focus and selection.
+   *   Home / End jump to first / last.
+   *   Enter / Space are handled by the browser's native button click.
+   */
+  const onTabKeyDown = useCallback(
+    (e, index) => {
+      const count = SERVICE_ORDER.length;
+      let nextIndex = null;
+
+      if (e.key === 'ArrowRight') nextIndex = (index + 1) % count;
+      else if (e.key === 'ArrowLeft')
+        nextIndex = (index - 1 + count) % count;
+      else if (e.key === 'Home') nextIndex = 0;
+      else if (e.key === 'End') nextIndex = count - 1;
+
+      if (nextIndex === null) return;
+
+      e.preventDefault();
+      const nextKey = SERVICE_ORDER[nextIndex];
+      setActiveTab(nextKey);
+      tabRefs.current[nextKey]?.focus();
+    },
+    []
+  );
 
   return (
-    <section className="home-church-time">
-      <div className="home-church-time-container">
-        <motion.div 
-          className="home-section-header"
-          initial={{ opacity: 0, y: 20 }}
+    <section id="church-time" className="home-church-time">
+      <div className="home-church-time__container">
+        {/* Header */}
+        <motion.div
+          className="home-church-time__header"
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="home-section-title">Service Times</h2>
-          <p className="home-section-subtitle">
+          <h2 className="home-church-time__title">Service Times</h2>
+          <p className="home-church-time__subtitle">
             Join us for prayer and worship throughout the week
           </p>
         </motion.div>
 
-        <motion.div 
-          className="home-time-tabs"
-          initial={{ opacity: 0, y: 20 }}
+        {/* Tabs */}
+        <motion.div
+          className="home-church-time__tabs"
+          role="tablist"
+          aria-label="Select a service"
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          {tabs.map(tab => (
-            <button
-              key={tab.key}
-              className={`home-tab-btn ${activeTab === tab.key ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              <span className="home-tab-icon">{tab.icon}</span>
-              <span className="home-tab-label">{tab.label}</span>
-            </button>
-          ))}
+          {SERVICE_ORDER.map((key, index) => {
+            const { label, Icon } = SERVICES[key];
+            const isActive = activeTab === key;
+
+            return (
+              <button
+                key={key}
+                ref={(el) => {
+                  tabRefs.current[key] = el;
+                }}
+                id={`church-time-tab-${key}`}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`church-time-panel-${key}`}
+                tabIndex={isActive ? 0 : -1}
+                onClick={() => setActiveTab(key)}
+                onKeyDown={(e) => onTabKeyDown(e, index)}
+                className={`home-church-time__tab${
+                  isActive ? ' home-church-time__tab--active' : ''
+                }`}
+              >
+                <span className="home-church-time__tab-icon">
+                  <Icon aria-hidden="true" />
+                </span>
+                <span>{label}</span>
+              </button>
+            );
+          })}
         </motion.div>
 
-        <motion.div 
-          className="home-time-content"
-          initial={{ opacity: 0, y: 20 }}
+        {/* Panel */}
+        <motion.div
+          className="home-church-time__content"
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <AnimatePresence mode="wait">
-            {activeTab === 'mass' && (
-              <TimeSection 
-                key="mass" 
-                title="Mass Times" 
-                times={times.mass} 
-                icon={sectionIcons.mass}
-              />
-            )}
-            {activeTab === 'confession' && (
-              <TimeSection 
-                key="confession" 
-                title="Confession Times" 
-                times={times.confession} 
-                icon={sectionIcons.confession}
-              />
-            )}
-            {activeTab === 'adoration' && (
-              <TimeSection 
-                key="adoration" 
-                title="Adoration Times" 
-                times={times.adoration} 
-                icon={sectionIcons.adoration}
-              />
-            )}
-          </AnimatePresence>
-        </motion.div>
+            <motion.div
+              key={activeTab}
+              id={`church-time-panel-${activeTab}`}
+              role="tabpanel"
+              aria-labelledby={`church-time-tab-${activeTab}`}
+              tabIndex={0}
+              className="home-church-time__card"
+              initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={shouldReduceMotion ? undefined : { opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="home-church-time__card-header">
+                <span className="home-church-time__card-icon">
+                  <activeService.Icon aria-hidden="true" />
+                </span>
+                <h3 className="home-church-time__card-title">
+                  {activeService.panelTitle}
+                </h3>
+              </div>
 
-        <motion.div 
-          className="home-time-footer"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
+              <ul className="home-church-time__list">
+                {activeService.days.map((entry) => (
+                  <li key={entry.day} className="home-church-time__row">
+                    <div className="home-church-time__day">
+                      <FiCalendar
+                        className="home-church-time__day-icon"
+                        aria-hidden="true"
+                      />
+                      <span>{entry.day}</span>
+                    </div>
+                    <div className="home-church-time__times">
+                      {entry.times.map((time) => (
+                        <span
+                          key={time}
+                          className="home-church-time__time-badge"
+                        >
+                          {time}
+                        </span>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </AnimatePresence>
         </motion.div>
       </div>
     </section>
   );
-};
-
-export default ChurchTime;
+}
