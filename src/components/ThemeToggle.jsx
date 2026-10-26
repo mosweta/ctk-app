@@ -11,10 +11,10 @@
  *   - The current mode is shown via icon (Sun, Moon, or Monitor) and via
  *     the aria-label and title attributes.
  *
- * Placement:
- *   - Desktop header: to the right of the navigation links.
- *   - Mobile header: next to the hamburger menu button.
- *   - Admin header: in the top bar.
+ * State source:
+ *   Reads and cycles via ThemeContext, not the useTheme() hook directly.
+ *   This means the desktop and mobile instances (both mounted in the
+ *   Header) always reflect the same theme.
  *
  * The button is a plain <button> so keyboard focus and activation work
  * out of the box. It inherits the `.btn-ghost` styling from index.css
@@ -22,7 +22,7 @@
  */
 
 import { Sun, Moon, Monitor } from 'lucide-react';
-import { useTheme } from '../hooks/useTheme';
+import { useThemeContext } from '../context/ThemeContext';
 
 /**
  * Human-readable labels per theme mode. Used for aria-label and title
@@ -45,7 +45,7 @@ const ICONS = {
 };
 
 export default function ThemeToggle({ className = '' }) {
-  const { theme, cycleTheme } = useTheme();
+  const { theme, cycleTheme } = useThemeContext();
   const Icon = ICONS[theme];
 
   return (

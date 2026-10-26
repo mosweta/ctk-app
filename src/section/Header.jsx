@@ -4,20 +4,30 @@
  * Site-wide navigation bar. Sticky at the top of every page.
  *
  * Design notes:
- *   - Generous gaps between nav items (gap-3) and inside buttons
- *     (gap-2.5) so the header breathes and fills space evenly.
- *   - ThemeToggle is separated by a vertical divider with ample
- *     padding (ml-6 pl-6).
- *   - Mobile sidebar uses space-y-3 for top-level items and gap-3.5
- *     between icon and label.
+ *   - Generous gaps between nav items and inside buttons so the header
+ *     breathes and fills space evenly.
+ *   - ThemeToggle is separated by a vertical divider.
+ *   - Desktop navigation is shown at the `lg` breakpoint (1024px+),
+ *     not `md`. At `md` the six-item nav plus logo plus theme toggle
+ *     overflows the viewport; `lg` gives it room without shrinking
+ *     anything or dropping nav items.
+ *   - Mobile drawer uses large, thumb-friendly rows: ~64px top-level
+ *     items, ~56px sub-menu items, with 20px vertical gaps. The
+ *     drawer has plenty of vertical space, so we spend it on
+ *     tap-target size and spacing rather than cramping.
  *
  * Accessibility:
+ *   - Desktop dropdown triggers are real buttons with click + keyboard
+ *     activation, aria-haspopup, aria-expanded, and aria-controls.
+ *   - Escape closes an open dropdown and returns focus to its trigger.
+ *   - Mobile drawer has role="dialog", aria-modal="true", a labelled
+ *     title, moves focus in on open, restores focus on close, traps Tab
+ *     inside, and closes on Escape.
  *   - aria-labels on all icon-only controls.
- *   - Mobile drawer has a close button and dismisses on backdrop.
  *   - Body scroll locks while the mobile drawer is open.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, forwardRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -78,9 +88,15 @@ export default function Header() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [mobileSection, setMobileSection] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
+  const drawerRef = useRef(null);
+  const previouslyFocused = useRef(null);
+  const triggerRefs = useRef({});
+
+  // Scroll shadow.
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
@@ -88,6 +104,7 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Close menus on route change.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
@@ -95,10 +112,64 @@ export default function Header() {
     setMobileSection(null);
   }, [location.pathname]);
 
+  // Global Escape handler for desktop dropdowns.
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    if (!openDropdown) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setOpenDropdown(null);
+        triggerRefs.current[openDropdown]?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [openDropdown]);
+
+  // Mobile drawer: focus management, Tab trap, Escape, scroll lock.
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    previouslyFocused.current = document.activeElement;
+    document.body.style.overflow = 'hidden';
+
+    const raf = requestAnimationFrame(() => {
+      drawerRef.current
+        ?.querySelector(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        ?.focus();
+    });
+
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setMobileOpen(false);
+        return;
+      }
+      if (e.key !== 'Tab') return;
+
+      const focusables = drawerRef.current?.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusables || focusables.length === 0) return;
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+
     return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
+      previouslyFocused.current?.focus?.();
     };
   }, [mobileOpen]);
 
@@ -116,13 +187,14 @@ export default function Header() {
             : 'bg-surface/95 backdrop-blur-sm shadow-sm'
         }`}
       >
-        <nav className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8
-                        flex justify-between items-center h-20 md:h-24">
-          
+        <nav
+          className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8
+                     flex justify-between items-center h-20 md:h-24"
+        >
           {/* Logo */}
           <button
             onClick={() => go('/')}
-            className="flex items-center gap-6 group"
+            className="flex items-center gap-4 group"
             aria-label="Christ the King - Home"
           >
             <img
@@ -137,54 +209,103 @@ export default function Header() {
             </span>
           </button>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-3">
+          {/* Desktop Navigation (lg and up) */}
+          <div className="hidden lg:flex items-center gap-2">
             <NavButton icon={Home} label="Home" onClick={() => go('/')} />
 
             {Object.entries(NAV).map(([key, group]) => {
               const GroupIcon = group.icon;
+              const isOpen = openDropdown === key;
+              const triggerId = `nav-trigger-${key}`;
+              const panelId = `nav-panel-${key}`;
+
               return (
                 <div
                   key={key}
                   className="relative"
                   onMouseEnter={() => setOpenDropdown(key)}
-                  onMouseLeave={() => setOpenDropdown(null)}
+                  onMouseLeave={() =>
+                    setOpenDropdown((cur) => (cur === key ? null : cur))
+                  }
                 >
                   <NavButton
+                    ref={(el) => {
+                      triggerRefs.current[key] = el;
+                    }}
+                    id={triggerId}
                     icon={GroupIcon}
                     label={group.title}
+                    aria-haspopup="menu"
+                    aria-expanded={isOpen}
+                    aria-controls={panelId}
+                    onClick={() =>
+                      setOpenDropdown((cur) => (cur === key ? null : key))
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        setOpenDropdown(key);
+                        requestAnimationFrame(() => {
+                          document
+                            .querySelector(`#${panelId} [data-menu-item]`)
+                            ?.focus();
+                        });
+                      }
+                    }}
                     trailing={
                       <ChevronDown
                         size={18}
+                        aria-hidden="true"
                         className={`transition-transform duration-200 ml-1 ${
-                          openDropdown === key ? 'rotate-180' : ''
+                          isOpen ? 'rotate-180' : ''
                         }`}
                       />
                     }
                   />
+
                   <AnimatePresence>
-                    {openDropdown === key && (
+                    {isOpen && (
                       <motion.div
+                        id={panelId}
+                        role="menu"
+                        aria-labelledby={triggerId}
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute left-0 top-full mt-2 w-64 bg-surface
-                                   border border-border rounded-xl shadow-xl
-                                   py-2 overflow-hidden"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Escape') {
+                            setOpenDropdown(null);
+                            triggerRefs.current[key]?.focus();
+                          }
+                        }}
+                        className={`absolute top-full w-64 bg-surface
+                                    border border-border rounded-xl shadow-xl
+                                    py-2 overflow-hidden ${
+                                      key === 'events' ? 'right-0' : 'left-0'
+                                    }`}
                       >
                         {group.dropdown.map((item) => {
                           const ItemIcon = item.icon;
                           return (
                             <button
                               key={item.path}
+                              data-menu-item
+                              role="menuitem"
                               onClick={() => go(item.path)}
                               className="w-full flex items-center gap-3 px-4 py-3
                                          text-[15px] font-medium text-body
                                          hover:bg-primary-light hover:text-primary
+                                         focus-visible:outline-none
+                                         focus-visible:bg-primary-light
+                                         focus-visible:text-primary
                                          transition-colors text-left"
                             >
-                              <ItemIcon size={18} className="text-primary" />
+                              <ItemIcon
+                                size={18}
+                                className="text-primary"
+                                aria-hidden="true"
+                              />
                               {item.title}
                             </button>
                           );
@@ -202,14 +323,13 @@ export default function Header() {
               onClick={() => go('/get-involved')}
             />
 
-            {/* Theme Toggle integrated with more gap */}
-            <div className="ml-10 pl-6 border-l border-border flex items-center justify-center">
+            <div className="ml-6 pl-4 border-l border-border flex items-center justify-center">
               <ThemeToggle />
             </div>
           </div>
 
-          {/* Mobile Trigger */}
-          <div className="md:hidden flex items-center gap-3">
+          {/* Mobile Trigger (below lg) */}
+          <div className="lg:hidden flex items-center gap-3">
             <ThemeToggle />
             <button
               onClick={() => setMobileOpen(true)}
@@ -223,7 +343,7 @@ export default function Header() {
         </nav>
       </header>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -231,22 +351,28 @@ export default function Header() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden"
               onClick={() => setMobileOpen(false)}
+              aria-hidden="true"
             />
             <motion.aside
+              ref={drawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="mobile-nav-title"
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 240 }}
               className="fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw]
-                         bg-surface flex flex-col shadow-2xl md:hidden"
+                         bg-surface flex flex-col shadow-2xl lg:hidden"
             >
               {/* Sidebar Header */}
               <div className="bg-base text-white px-6 py-8 flex flex-col items-center relative">
                 <button
                   onClick={() => setMobileOpen(false)}
-                  className="absolute top-4 right-4 p-2 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+                  className="absolute top-4 right-4 p-3 rounded-lg text-white/70
+                             hover:bg-white/10 hover:text-white transition-colors"
                   aria-label="Close menu"
                 >
                   <X size={24} />
@@ -256,12 +382,14 @@ export default function Header() {
                   alt=""
                   className="h-20 w-20 rounded-full border-4 border-white/20 mb-4"
                 />
-                <h3 className="font-bold text-xl">Christ the King</h3>
+                <h3 id="mobile-nav-title" className="font-bold text-xl">
+                  Christ the King
+                </h3>
                 <p className="text-sm text-white/70">Catholic Parish</p>
               </div>
 
-              {/* Sidebar Navigation with increased vertical gaps */}
-              <nav className="flex-1 overflow-y-auto p-4 space-y-3">
+              {/* Sidebar Navigation — generously sized tap targets */}
+              <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
                 <MobileNavItem
                   icon={Home}
                   label="Home"
@@ -271,33 +399,45 @@ export default function Header() {
                 {Object.entries(NAV).map(([key, group]) => {
                   const GroupIcon = group.icon;
                   const isOpen = mobileSection === key;
+                  const regionId = `mobile-group-${key}`;
+
                   return (
                     <div key={key}>
                       <button
                         onClick={() => setMobileSection(isOpen ? null : key)}
-                        className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl
-                                   text-body font-semibold text-[15px]
+                        aria-expanded={isOpen}
+                        aria-controls={regionId}
+                        className="w-full flex items-center gap-4 px-4 py-4 rounded-xl
+                                   text-body font-semibold text-base
                                    hover:bg-primary-light hover:text-primary
-                                   transition-colors"
+                                   transition-colors
+                                   focus-visible:outline-none focus-visible:ring-2
+                                   focus-visible:ring-primary"
                       >
-                        <GroupIcon size={22} className="text-primary" />
+                        <GroupIcon
+                          size={24}
+                          className="text-primary shrink-0"
+                          aria-hidden="true"
+                        />
                         <span className="flex-1 text-left">{group.title}</span>
                         <ChevronDown
-                          size={18}
-                          className={`transition-transform duration-200 ${
+                          size={20}
+                          aria-hidden="true"
+                          className={`shrink-0 transition-transform duration-200 ${
                             isOpen ? 'rotate-180' : ''
                           }`}
                         />
                       </button>
-                      
-                      {/* Sub-menu with better spacing */}
+
                       <AnimatePresence>
                         {isOpen && (
                           <motion.div
+                            id={regionId}
+                            role="group"
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden pl-8 mt-2 space-y-1.5"
+                            className="overflow-hidden pl-3 mt-3 space-y-2"
                           >
                             {group.dropdown.map((item) => {
                               const ItemIcon = item.icon;
@@ -305,12 +445,19 @@ export default function Header() {
                                 <button
                                   key={item.path}
                                   onClick={() => go(item.path)}
-                                  className="w-full flex items-center gap-3 px-4 py-3
-                                             text-sm font-medium text-muted
+                                  className="w-full flex items-center gap-3.5 px-4 py-3.5
+                                             text-[15px] font-medium text-muted
                                              hover:text-primary hover:bg-primary-light
-                                             rounded-lg transition-colors text-left"
+                                             rounded-lg transition-colors text-left
+                                             focus-visible:outline-none
+                                             focus-visible:ring-2
+                                             focus-visible:ring-primary"
                                 >
-                                  <ItemIcon size={18} />
+                                  <ItemIcon
+                                    size={20}
+                                    className="shrink-0"
+                                    aria-hidden="true"
+                                  />
                                   {item.title}
                                 </button>
                               );
@@ -345,35 +492,54 @@ export default function Header() {
 /**
  * Desktop navigation button. Enlarged icons, generous padding, gap-2.5
  * between icon and text.
+ *
+ * Forwards `ref` and all extra props (onClick, onKeyDown, aria-*,
+ * id) to the underlying button so dropdown triggers can attach
+ * keyboard and accessibility handlers.
  */
-function NavButton({ icon: Icon, label, trailing, onClick }) {
+const NavButton = forwardRef(function NavButton(
+  { icon: Icon, label, trailing, ...rest },
+  ref
+) {
   return (
     <button
-      onClick={onClick}
+      ref={ref}
+      type="button"
       className="flex items-center gap-2.5 px-4 py-3 rounded-xl
                  text-[15px] font-semibold text-body
-                 hover:bg-primary-light hover:text-primary transition-colors"
+                 hover:bg-primary-light hover:text-primary transition-colors
+                 focus-visible:outline-none focus-visible:ring-2
+                 focus-visible:ring-primary"
+      {...rest}
     >
-      <Icon size={20} className="text-primary" strokeWidth={2} />
+      <Icon size={20} className="text-primary" strokeWidth={2} aria-hidden="true" />
       {label}
       {trailing}
     </button>
   );
-}
+});
 
 /**
- * Mobile drawer navigation item. Larger icons, gap-3.5 between icon
- * and label.
+ * Mobile drawer top-level navigation item. Large tap target
+ * (~64px tall) with 24px icon, 16px gap to label, and full-width
+ * hit area so the whole row is tappable.
  */
 function MobileNavItem({ icon: Icon, label, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl
-                 text-body font-semibold text-[15px]
-                 hover:bg-primary-light hover:text-primary transition-colors"
+      className="w-full flex items-center gap-4 px-4 py-4 rounded-xl
+                 text-body font-semibold text-base
+                 hover:bg-primary-light hover:text-primary transition-colors
+                 focus-visible:outline-none focus-visible:ring-2
+                 focus-visible:ring-primary"
     >
-      <Icon size={22} className="text-primary" strokeWidth={2} />
+      <Icon
+        size={24}
+        className="text-primary shrink-0"
+        strokeWidth={2}
+        aria-hidden="true"
+      />
       {label}
     </button>
   );

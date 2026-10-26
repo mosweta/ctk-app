@@ -34,8 +34,9 @@ import EventDetail from './pages/EventDetail';
 import GroupDetail from './pages/GroupDetail';
 import DailyReadings from './pages/DailyReadings';
 
-// Auth
+// Auth & theme
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Admin pages
@@ -74,61 +75,63 @@ const Home = () => (
 const App = () => {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Routes>
+      <ThemeProvider>
+        <AuthProvider>
+          <Routes>
 
-          {/* ============ ADMIN ROUTES ============ */}
-          <Route path="/parish-admin/login" element={<AdminLogin />} />
+            {/* ============ ADMIN ROUTES ============ */}
+            <Route path="/parish-admin/login" element={<AdminLogin />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/parish-admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="events" element={<EventsManager />} />
-              <Route path="announcements" element={<BulletinsManager />} />
-              <Route path="readings" element={<ReadingsManager />} />
-              <Route path="gallery" element={<GalleryManager />} />
-              <Route path="groups" element={<GroupsManager />} />
-              <Route path="settings" element={<SettingsManager />} />
-              <Route path="staff" element={<StaffManager />} />
-              <Route path="livestreams" element={<LivestreamsManager />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/parish-admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="events" element={<EventsManager />} />
+                <Route path="announcements" element={<BulletinsManager />} />
+                <Route path="readings" element={<ReadingsManager />} />
+                <Route path="gallery" element={<GalleryManager />} />
+                <Route path="groups" element={<GroupsManager />} />
+                <Route path="settings" element={<SettingsManager />} />
+                <Route path="staff" element={<StaffManager />} />
+                <Route path="livestreams" element={<LivestreamsManager />} />
+              </Route>
             </Route>
-          </Route>
 
-          {/* ============ PUBLIC ROUTES ============ */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
+            {/* ============ PUBLIC ROUTES ============ */}
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
 
-            {/* About */}
-            <Route path="gallery" element={<PhotoAlbum />} />
-            <Route path="contact" element={<ContactUs />} />
-            <Route path="history" element={<History />} />
+              {/* About */}
+              <Route path="gallery" element={<PhotoAlbum />} />
+              <Route path="contact" element={<ContactUs />} />
+              <Route path="history" element={<History />} />
 
-            {/* Liturgy */}
-            <Route path="mass-times" element={<MassTime />} />
-            <Route path="adoration" element={<AdorationTime />} />
-            <Route path="confession" element={<ConfessionTime />} />
-            <Route path="sacrament" element={<Sacraments />} />
-            <Route path="readings" element={<DailyReadings />} />
+              {/* Liturgy */}
+              <Route path="mass-times" element={<MassTime />} />
+              <Route path="adoration" element={<AdorationTime />} />
+              <Route path="confession" element={<ConfessionTime />} />
+              <Route path="sacrament" element={<Sacraments />} />
+              <Route path="readings" element={<DailyReadings />} />
 
-            {/* Events */}
-            <Route path="events" element={<EventsList />} />
-            <Route path="events/:id" element={<EventDetail />} />
-            <Route path="calendar" element={<Calendar />} />
-            <Route path="announcements" element={<Announcements />} />
+              {/* Events */}
+              <Route path="events" element={<EventsList />} />
+              <Route path="events/:id" element={<EventDetail />} />
+              <Route path="calendar" element={<Calendar />} />
+              <Route path="announcements" element={<Announcements />} />
 
-            {/* Ministry */}
-            <Route path="readmore" element={<MinistryReadMore />} />
-            <Route path="signup" element={<MinistrySignup />} />
+              {/* Ministry */}
+              <Route path="readmore" element={<MinistryReadMore />} />
+              <Route path="signup" element={<MinistrySignup />} />
 
-            {/* General */}
-            <Route path="get-involved" element={<GetInvolved />} />
-            <Route path="groups/:slug" element={<GroupDetail />} />
-            <Route path="parish-registration" element={<ParishRegistration />} />
-            <Route path="staff" element={<Staff />} />
-          </Route>
+              {/* General */}
+              <Route path="get-involved" element={<GetInvolved />} />
+              <Route path="groups/:slug" element={<GroupDetail />} />
+              <Route path="parish-registration" element={<ParishRegistration />} />
+              <Route path="staff" element={<Staff />} />
+            </Route>
 
-        </Routes>
-      </AuthProvider>
+          </Routes>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 };
