@@ -12,9 +12,10 @@
  *     overflows the viewport; `lg` gives it room without shrinking
  *     anything or dropping nav items.
  *   - Mobile drawer uses large, thumb-friendly rows: ~64px top-level
- *     items, ~56px sub-menu items, with 20px vertical gaps. The
- *     drawer has plenty of vertical space, so we spend it on
- *     tap-target size and spacing rather than cramping.
+ *     items, ~56px sub-menu items, with 20px vertical gaps.
+ *   - Give is a filled primary CTA (not a subtle nav button) to
+ *     distinguish it from navigation. Same treatment on desktop and
+ *     in the mobile drawer.
  *
  * Accessibility:
  *   - Desktop dropdown triggers are real buttons with click + keyboard
@@ -323,7 +324,22 @@ export default function Header() {
               onClick={() => go('/get-involved')}
             />
 
-            <div className="ml-6 pl-4 border-l border-border flex items-center justify-center">
+            {/* Give CTA — distinct from nav items, prominent primary button */}
+            <button
+              type="button"
+              onClick={() => go('/give')}
+              className="ml-2 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl
+                         bg-primary text-on-primary font-semibold text-[15px]
+                         shadow-sm hover:bg-primary-hover hover:shadow-md
+                         transition-colors
+                         focus-visible:outline-none focus-visible:ring-2
+                         focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              <Heart size={18} aria-hidden="true" />
+              Give
+            </button>
+
+            <div className="ml-4 pl-4 border-l border-border flex items-center justify-center">
               <ThemeToggle />
             </div>
           </div>
@@ -388,7 +404,7 @@ export default function Header() {
                 <p className="text-sm text-white/70">Catholic Parish</p>
               </div>
 
-              {/* Sidebar Navigation — generously sized tap targets */}
+              {/* Sidebar Navigation */}
               <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
                 <MobileNavItem
                   icon={Home}
@@ -474,6 +490,21 @@ export default function Header() {
                   label="Get Involved"
                   onClick={() => go('/get-involved')}
                 />
+
+                {/* Give CTA in drawer — same visual weight as desktop */}
+                <button
+                  type="button"
+                  onClick={() => go('/give')}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-4
+                             rounded-xl bg-primary text-on-primary
+                             font-semibold text-base shadow-sm
+                             hover:bg-primary-hover transition-colors
+                             focus-visible:outline-none focus-visible:ring-2
+                             focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  <Heart size={20} aria-hidden="true" />
+                  Give
+                </button>
               </nav>
 
               <div className="px-6 py-5 border-t border-border text-center">
@@ -490,12 +521,8 @@ export default function Header() {
 }
 
 /**
- * Desktop navigation button. Enlarged icons, generous padding, gap-2.5
- * between icon and text.
- *
- * Forwards `ref` and all extra props (onClick, onKeyDown, aria-*,
- * id) to the underlying button so dropdown triggers can attach
- * keyboard and accessibility handlers.
+ * Desktop navigation button. Forwards ref + extra props so dropdown
+ * triggers can attach keyboard and accessibility handlers.
  */
 const NavButton = forwardRef(function NavButton(
   { icon: Icon, label, trailing, ...rest },
@@ -520,9 +547,7 @@ const NavButton = forwardRef(function NavButton(
 });
 
 /**
- * Mobile drawer top-level navigation item. Large tap target
- * (~64px tall) with 24px icon, 16px gap to label, and full-width
- * hit area so the whole row is tappable.
+ * Mobile drawer top-level navigation item. Large tap target.
  */
 function MobileNavItem({ icon: Icon, label, onClick }) {
   return (

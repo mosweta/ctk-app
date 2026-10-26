@@ -33,6 +33,7 @@ import EventsList from './pages/EventsList';
 import EventDetail from './pages/EventDetail';
 import GroupDetail from './pages/GroupDetail';
 import DailyReadings from './pages/DailyReadings';
+import Give from './pages/Give';
 
 // Auth & theme
 import { AuthProvider } from './context/AuthContext';
@@ -127,6 +128,7 @@ const App = () => {
               <Route path="groups/:slug" element={<GroupDetail />} />
               <Route path="parish-registration" element={<ParishRegistration />} />
               <Route path="staff" element={<Staff />} />
+              <Route path="give" element={<Give />} />
             </Route>
 
           </Routes>
