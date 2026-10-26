@@ -54,13 +54,13 @@ const SLIDES = [
   },
   {
     id: 4,
-    title: 'Prepare Your Heart',
-    subtitle: 'Season of Lent',
+    title: 'Our Parish Community',
+    subtitle: 'Jumuiyas, Groups & Choirs',
     description:
-      'Join us for special Lenten services, confessions, and Easter celebrations.',
-    primary: { label: 'Announcements', to: '/announcements', icon: FiCalendar },
-    secondary: { label: 'Confession Times', to: '/confession', icon: FiPlay },
-    img: { desktop: grotoDesktop, mobile: grotoDesktop },
+      'Discover a place to belong. Join one of our Small Christian Communities, choirs, or ministries today.',
+    primary: { label: 'Find Your Group', to: '/get-involved', icon: FiCalendar },
+    secondary: { label: 'View Gallery', to: '/gallery', icon: FiPlay },
+    img: { desktop: cmaDesktop, mobile: cmaMobile }, // Use the CMA community image
   },
 ];
 
