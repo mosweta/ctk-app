@@ -21,7 +21,13 @@ export const config = {
 };
 
 // Hard requirements — the app cannot run without these.
-const requiredInProduction = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
+const requiredInProduction = [
+  'SUPABASE_URL',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'RESEND_API_KEY',
+  'ADMIN_EMAIL',
+  'RECAPTCHA_SECRET',
+];
 const requiredAlways = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
 
 for (const key of requiredAlways) {

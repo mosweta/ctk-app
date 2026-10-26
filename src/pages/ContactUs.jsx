@@ -1,237 +1,287 @@
-import React, { useState, useRef } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
-import Swal from "sweetalert2";
-import "./contact.css";
+/**
+ * Contact page.
+ *
+ * Two-column layout on desktop (contact info + form). Stacks on
+ * mobile, with contact details preserved (the previous CSS hid them
+ * below 820px).
+ *
+ * Submissions go to POST /api/contact on the Render backend. The
+ * Cloudflare Function at functions/api/send-email.js should be
+ * removed only after the Render endpoint is verified in production.
+ */
 
-const ContactUs = () => {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+import { useState, useRef } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
+import Swal from 'sweetalert2';
+import { MapPin, Phone, Mail, Send, AlertCircle } from 'lucide-react';
+import './contact.css';
+
+const API_BASE = import.meta.env.VITE_API_URL;
+
+const CONTACT = {
+  address1: 'MWR6+GPW, Embakasi Village Market',
+  address2: 'Opposite Posta, Embakasi Road, Nairobi',
+  address3: 'Nairobi County 00521, Kenya',
+  phone: '0202495785',
+  phoneDisplay: '020 249 5785',
+  email: 'ctkcatholicparishemba@gmail.com',
+};
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export default function ContactUs() {
+  const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [captchaValue, setCaptchaValue] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const recaptchaRef = useRef();
 
+  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
+  const fail = (title, text) => {
+    Swal.fire({
+      icon: 'error',
+      title,
+      text,
+      confirmButtonColor: '#800000',
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
 
-    // Check if environment variables are configured
-    if (!import.meta.env.VITE_WORKER_URL) {
-      Swal.fire({
-        icon: "error",
-        title: "Configuration Error",
-        text: "Worker URL not configured. Please check environment variables.",
-        confirmButtonColor: "#d33",
-      });
-      return;
-    }
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const message = form.message.trim();
 
-    // Client-side validation
-    if (!form.name.trim()) {
-      Swal.fire({
-        icon: "warning",
-        title: "Name Required",
-        text: "Please enter your name.",
-        confirmButtonColor: "#3085d6",
-      });
-      return;
-    }
+    if (!name) return fail('Name Required', 'Please enter your name.');
+    if (!EMAIL_RE.test(email))
+      return fail('Invalid Email', 'Please enter a valid email address.');
+    if (!message)
+      return fail('Message Required', 'Please enter your message.');
+    if (!captchaValue)
+      return fail(
+        'Verification Required',
+        "Please complete the reCAPTCHA to prove you're not a robot."
+      );
 
-    if (!validateEmail(form.email)) {
-      Swal.fire({
-        icon: "warning",
-        title: "Invalid Email",
-        text: "Please enter a valid email address.",
-        confirmButtonColor: "#3085d6",
-      });
-      return;
-    }
-
-    if (!form.message.trim()) {
-      Swal.fire({
-        icon: "warning",
-        title: "Message Required",
-        text: "Please enter your message.",
-        confirmButtonColor: "#3085d6",
-      });
-      return;
-    }
-
-    if (!captchaValue) {
-      Swal.fire({
-        icon: "warning",
-        title: "Verification Required",
-        text: "Please verify that you're not a robot.",
-        confirmButtonColor: "#3085d6",
-      });
-      return;
+    if (!API_BASE || !siteKey) {
+      return fail(
+        'Configuration Error',
+        'The contact form is not configured. Please email or call the parish office directly.'
+      );
     }
 
     setIsLoading(true);
 
     try {
-      const WORKER_URL = import.meta.env.VITE_WORKER_URL;
-      
-      console.log("Sending to worker:", WORKER_URL); // Debug log
-      
-      const response = await fetch(WORKER_URL, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          name: form.name,
-          email: form.email,
-          message: form.message,
-          token: captchaValue,
-        }),
+      const response = await fetch(`${API_BASE}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message, token: captchaValue }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (response.ok && data.success) {
         Swal.fire({
-          icon: "success",
-          title: "Message Sent!",
-          text: "Thank you for contacting Christ The King Parish. We'll get back to you shortly.",
-          confirmButtonColor: "#3085d6",
+          icon: 'success',
+          title: 'Message Sent!',
+          text: "Thank you for contacting Christ the King Parish. We'll get back to you shortly.",
+          confirmButtonColor: '#800000',
         });
-        
-        // Reset form
-        setForm({ name: "", email: "", message: "" });
+        setForm({ name: '', email: '', message: '' });
         setCaptchaValue(null);
-        recaptchaRef.current.reset();
-      } else {
-        const errorMessage = data.error || "Failed to send message";
-        
-        if (errorMessage === "Captcha failed") {
-          Swal.fire({
-            icon: "error",
-            title: "Verification Failed",
-            text: "reCAPTCHA verification failed. Please try again.",
-            confirmButtonColor: "#d33",
-          });
-          recaptchaRef.current.reset();
-          setCaptchaValue(null);
-        } else {
-          throw new Error(errorMessage);
-        }
+        recaptchaRef.current?.reset();
+        return;
       }
+
+      if (response.status === 403) {
+        fail(
+          'Verification Failed',
+          'reCAPTCHA verification failed. Please complete the challenge and try again.'
+        );
+        recaptchaRef.current?.reset();
+        setCaptchaValue(null);
+        return;
+      }
+      if (response.status === 429) {
+        fail(
+          'Too Many Requests',
+          'You have submitted a message recently. Please wait a few minutes before trying again.'
+        );
+        return;
+      }
+      if (response.status >= 500) {
+        fail(
+          'Server Error',
+          'The message could not be sent right now. Please try again in a few minutes, or call the parish office.'
+        );
+        return;
+      }
+
+      fail(
+        'Submission Failed',
+        data.message || 'Something went wrong. Please try again.'
+      );
     } catch (err) {
-      console.error("Form submission error:", err);
-      Swal.fire({
-        icon: "error",
-        title: "Submission Failed",
-        text: err.message === "Failed to fetch" 
-          ? "Unable to connect to the server. Please check your internet connection or worker URL."
-          : err.message || "Something went wrong. Please try again later.",
-        confirmButtonColor: "#d33",
-      });
+      console.error('Contact submission failed:', err);
+      fail(
+        'Network Error',
+        'We could not reach the server. Please check your connection and try again.'
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="contactcontainer">
-      <div className="content">
-        {/* Left side info */}
-        <div className="left-side">
-          <div className="address details" id='addressdet'>
-            <i className="fas fa-map-marker-alt"></i>
-            <div className="topic">Address</div>
-            <div className="text-one">MWR6+GPW, Embakasi Village Market Opposite Posta, Embakasi Road, Nairobi</div>
-            <div className="text-two">Nairobi County 00521, Kenya</div>
-          </div>
+    <main className="contact-page">
+      <div className="contact-page__container">
+        <header className="contact-page__header">
+          <h1 className="contact-page__title">Contact Us</h1>
+          <p className="contact-page__subtitle">
+            If you have any questions, feel free to reach out to us.
+          </p>
+        </header>
 
-          <div className="phone details" id='phonedet'>
-            <i className="fas fa-phone-alt"></i>
-            <div className="topic">Phone</div>
-            <a href="tel:0202495785" className="text-one">
-              0202495785
-            </a>
-          </div>
+        <div className="contact-page__grid">
+          <aside className="contact-details">
+            <div className="contact-detail">
+              <span className="contact-detail__icon" aria-hidden="true">
+                <MapPin size={20} />
+              </span>
+              <div>
+                <p className="contact-detail__label">Address</p>
+                <address className="contact-detail__value">
+                  {CONTACT.address1}
+                  <br />
+                  {CONTACT.address2}
+                  <br />
+                  {CONTACT.address3}
+                </address>
+              </div>
+            </div>
 
-          <div className="email details" id='emaildet'>
-            <i className="fas fa-envelope"></i>
-            <div className="topic">Email</div>
-            <div className="text-one">ctkcatholicparishemba@gmail.com</div>
-          </div>
-        </div>
+            <div className="contact-detail">
+              <span className="contact-detail__icon" aria-hidden="true">
+                <Phone size={20} />
+              </span>
+              <div>
+                <p className="contact-detail__label">Phone</p>
+                <a
+                  href={`tel:${CONTACT.phone}`}
+                  className="contact-detail__value contact-detail__link"
+                >
+                  {CONTACT.phoneDisplay}
+                </a>
+              </div>
+            </div>
 
-        {/* Right side form */}
-        <div className="right-side">
-          <div className="topic-text">Contact Us</div>
-          <p>If you have any questions, feel free to reach out to us by filling the form below.</p>
+            <div className="contact-detail">
+              <span className="contact-detail__icon" aria-hidden="true">
+                <Mail size={20} />
+              </span>
+              <div>
+                <p className="contact-detail__label">Email</p>
+                <a
+                  href={`mailto:${CONTACT.email}`}
+                  className="contact-detail__value contact-detail__link"
+                >
+                  {CONTACT.email}
+                </a>
+              </div>
+            </div>
+          </aside>
 
-          <form id="contactForm" onSubmit={handleSubmit}>
-            <div className="input-box">
-              <input 
-                type="text" 
+          <form className="contact-form" onSubmit={handleSubmit} noValidate>
+            <div className="contact-form__field">
+              <label htmlFor="name" className="contact-form__label">
+                Name <span className="contact-form__required">*</span>
+              </label>
+              <input
+                id="name"
                 name="name"
+                type="text"
+                autoComplete="name"
+                maxLength={100}
                 value={form.name}
                 onChange={handleChange}
-                placeholder="Enter your name" 
-                required 
                 disabled={isLoading}
+                required
+                className="contact-form__input"
               />
             </div>
-            
-            <div className="input-box">
-              <input 
-                type="email" 
+
+            <div className="contact-form__field">
+              <label htmlFor="email" className="contact-form__label">
+                Email <span className="contact-form__required">*</span>
+              </label>
+              <input
+                id="email"
                 name="email"
+                type="email"
+                autoComplete="email"
+                maxLength={254}
                 value={form.email}
-                placeholder="Enter your email"
                 onChange={handleChange}
-                required 
                 disabled={isLoading}
+                required
+                className="contact-form__input"
               />
             </div>
-            
-            <div className="input-box message-box">
-              <textarea 
-                name="message" 
-                placeholder="Enter your message"
+
+            <div className="contact-form__field">
+              <label htmlFor="message" className="contact-form__label">
+                Message <span className="contact-form__required">*</span>
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                rows={6}
+                maxLength={5000}
                 value={form.message}
                 onChange={handleChange}
-                rows="5"
+                disabled={isLoading}
                 required
-                disabled={isLoading}
-              ></textarea>
-            </div>
-            
-            <div className="recaptcha-container">
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                onChange={(val) => setCaptchaValue(val)}
-                theme="light"
+                className="contact-form__input contact-form__textarea"
               />
             </div>
-            
-            <div className="button">
-              <input 
-                type="submit" 
-                value={isLoading ? "Sending..." : "Send Now"} 
-                disabled={isLoading}
-                style={{
-                  opacity: isLoading ? 0.7 : 1,
-                  cursor: isLoading ? "not-allowed" : "pointer"
-                }}
-              />
+
+            <div className="contact-form__captcha">
+              {siteKey ? (
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={siteKey}
+                  onChange={(val) => setCaptchaValue(val)}
+                  onExpired={() => setCaptchaValue(null)}
+                  onErrored={() => setCaptchaValue(null)}
+                  theme="light"
+                />
+              ) : (
+                <div className="contact-form__config-error">
+                  <AlertCircle size={16} aria-hidden="true" />
+                  Form is not configured. Please email or call the parish
+                  office directly.
+                </div>
+              )}
             </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || !siteKey}
+              className="contact-form__submit"
+            >
+              <Send size={16} aria-hidden="true" />
+              {isLoading ? 'Sending…' : 'Send Message'}
+            </button>
           </form>
         </div>
       </div>
-    </div>
+    </main>
   );
-};
-
-export default ContactUs;
+}
