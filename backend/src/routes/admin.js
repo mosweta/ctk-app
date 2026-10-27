@@ -52,9 +52,6 @@ router.delete('/groups/:id', editorOrAdmin, adminController.deleteGroup);
 // Settings
 router.put('/settings', adminOnly, adminController.updateParishSettings);
 
-// Readings admin
-router.get('/readings', editorOrAdmin, adminController.listCachedReadings);
-router.post('/readings/:date/refresh', editorOrAdmin, adminController.refreshReadingsDate);
 
 // Staff
 router.get('/staff', editorOrAdmin, adminController.getAllStaff);

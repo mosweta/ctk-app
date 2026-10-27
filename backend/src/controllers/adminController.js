@@ -576,41 +576,7 @@ export const updateParishSettings = async (req, res, next) => {
   }
 };
 
-// ---------------------------------------------------------------------
-// Daily Readings Admin
-// ---------------------------------------------------------------------
-export const listCachedReadings = async (req, res, next) => {
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('daily_readings_cache')
-      .select('reading_date, fetched_at, is_manual_override')
-      .order('reading_date', { ascending: false })
-      .limit(60);
 
-    if (error) throw error;
-    res.json({ success: true, data });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const refreshReadingsDate = async (req, res, next) => {
-  try {
-    const { date } = req.params;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      throw new AppError('Invalid date format. Use YYYY-MM-DD.', 400);
-    }
-
-    // Import the service dynamically
-    const { refreshReadings } = await import('../services/readingsService.js');
-    const result = await refreshReadings(date);
-
-    await logAudit(req.user.id, 'refresh', 'readings', date);
-    res.json({ success: true, data: result });
-  } catch (err) {
-    next(err);
-  }
-};
 
 // ---------------------------------------------------------------------
 // Staff

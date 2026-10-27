@@ -131,18 +131,3 @@ export const getDailyReadings = async (date = new Date()) => {
   return readings;
 };
 
-/**
- * Force a refetch of a specific date, bypassing the cache.
- * Used by admin actions.
- *
- * @param {string} dateStr - YYYY-MM-DD
- * @returns {object} - readings object
- */
-export const refreshReadings = async (dateStr) => {
-  await supabaseAdmin
-    .from('daily_readings_cache')
-    .delete()
-    .eq('reading_date', dateStr);
-
-  return getDailyReadings(new Date(dateStr));
-};
