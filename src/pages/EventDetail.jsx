@@ -1,3 +1,25 @@
+/**
+ * Event detail page.
+ *
+ * Fetches a single event by ID and displays its details, plus an
+ * "Add to Google Calendar" link.
+ *
+ * Loading pattern:
+ *   State is stored as a single `result` object tagged with the ID it
+ *   was fetched for. Whether the current render is still loading,
+ *   has an error, or has an event is derived by comparing
+ *   `result.id` to the current `id` from the route. This avoids
+ *   synchronous setState resets inside the effect
+ *   (react-hooks/set-state-in-effect) while still guaranteeing that
+ *   switching from one event to another never shows the previous
+ *   event's data or the previous error.
+ *
+ * Cancellation:
+ *   Each effect run has a local `cancelled` flag. A slow response for
+ *   an older ID cannot overwrite state after the user has navigated
+ *   to a newer one.
+ */
+
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../lib/apiClient';
@@ -34,26 +56,31 @@ function formatTime(iso) {
 
 export default function EventDetail() {
   const { id } = useParams();
-  const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  // Reset state and fetch when ID changes
+  // Single source of truth for the fetch result. `id` inside the
+  // object identifies which event this result belongs to.
+  const [result, setResult] = useState({
+    id: null,
+    event: null,
+    error: null,
+  });
+
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setEvent(null);
-    setError('');
 
-    api.get(`/events/${id}`)
+    api
+      .get(`/events/${id}`)
       .then((res) => {
-        if (!cancelled) setEvent(res.data);
+        if (cancelled) return;
+        setResult({ id, event: res.data, error: null });
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message || 'Event not found');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (cancelled) return;
+        setResult({
+          id,
+          event: null,
+          error: err.message || 'Event not found',
+        });
       });
 
     return () => {
@@ -61,11 +88,26 @@ export default function EventDetail() {
     };
   }, [id]);
 
+  // Derived state — no setState, no effect. If the result's id does not
+  // match the current id, we are still loading the current event.
+  const isCurrent = result.id === id;
+  const loading = !isCurrent;
+  const event = isCurrent ? result.event : null;
+  const error = isCurrent ? result.error : null;
+
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] bg-background gap-4">
-        <Loader2 className="animate-spin text-primary" size={40} />
-        <p className="text-muted text-sm">Loading event details...</p>
+      <div
+        className="flex flex-col items-center justify-center min-h-[70vh] bg-background gap-4"
+        role="status"
+        aria-live="polite"
+      >
+        <Loader2
+          className="animate-spin text-primary"
+          size={40}
+          aria-hidden="true"
+        />
+        <p className="text-muted text-sm">Loading event details…</p>
       </div>
     );
   }
@@ -73,18 +115,22 @@ export default function EventDetail() {
   if (error || !event) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 bg-background text-center">
-        <div className="w-16 h-16 rounded-full bg-primary-light flex items-center justify-center mb-6">
+        <div
+          className="w-16 h-16 rounded-full bg-primary-light flex items-center justify-center mb-6"
+          aria-hidden="true"
+        >
           <AlertCircle size={32} className="text-primary" />
         </div>
         <h2 className="text-2xl font-bold text-heading mb-2">
           Event Not Found
         </h2>
         <p className="text-body mb-8 max-w-md">
-          {error || "We couldn't find the event you're looking for. It may have been removed or the link is incorrect."}
+          {error ||
+            "We couldn't find the event you're looking for. It may have been removed or the link is incorrect."}
         </p>
         <Link
           to="/events"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:bg-primary-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-on-primary font-semibold hover:bg-primary-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           <ArrowLeft size={18} aria-hidden="true" />
           Back to Events
@@ -93,11 +139,11 @@ export default function EventDetail() {
     );
   }
 
-  // Determine event status (past vs upcoming)
+  // Determine event status (past vs upcoming).
   const now = new Date();
   const startDate = new Date(event.start_time);
   const endDate = event.end_time ? new Date(event.end_time) : null;
-  
+
   let isPast = false;
   if (!Number.isNaN(startDate.getTime())) {
     isPast = endDate && !Number.isNaN(endDate.getTime())
@@ -105,7 +151,7 @@ export default function EventDetail() {
       : now > new Date(startDate.getTime() + 4 * 60 * 60 * 1000);
   }
 
-  // Generate Google Calendar link
+  // Generate Google Calendar link.
   const gCalUrl = getGoogleCalendarUrl(event);
 
   return (
@@ -123,7 +169,7 @@ export default function EventDetail() {
             <Calendar size={80} className="text-white/10" aria-hidden="true" />
           </div>
         )}
-        
+
         {/* Gradient overlay for robust text contrast on any image */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
 
@@ -142,25 +188,25 @@ export default function EventDetail() {
               Past Event
             </span>
           )}
-          
+
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white max-w-5xl drop-shadow-md leading-tight">
             {event.title}
           </h1>
         </div>
       </div>
 
-      {/* Content - No Card */}
+      {/* Content */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 relative z-10">
-        
         {/* Metadata Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-8 pb-10 border-b border-border">
-          
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-2xl bg-primary-light flex items-center justify-center shrink-0">
               <Calendar size={22} className="text-primary" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-xs text-muted uppercase font-bold tracking-wider mb-1">Date</p>
+              <p className="text-xs text-muted uppercase font-bold tracking-wider mb-1">
+                Date
+              </p>
               <p className="text-base font-semibold text-heading">
                 {formatFullDate(event.start_time)}
               </p>
@@ -172,7 +218,9 @@ export default function EventDetail() {
               <Clock size={22} className="text-primary" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-xs text-muted uppercase font-bold tracking-wider mb-1">Time</p>
+              <p className="text-xs text-muted uppercase font-bold tracking-wider mb-1">
+                Time
+              </p>
               <p className="text-base font-semibold text-heading">
                 {formatTime(event.start_time)}
                 {event.end_time && ` - ${formatTime(event.end_time)}`}
@@ -186,7 +234,9 @@ export default function EventDetail() {
                 <MapPin size={22} className="text-primary" aria-hidden="true" />
               </div>
               <div>
-                <p className="text-xs text-muted uppercase font-bold tracking-wider mb-1">Location</p>
+                <p className="text-xs text-muted uppercase font-bold tracking-wider mb-1">
+                  Location
+                </p>
                 <p className="text-base font-semibold text-heading">
                   {event.location}
                 </p>
@@ -201,7 +251,7 @@ export default function EventDetail() {
                 href={gCalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-primary text-primary font-semibold text-sm hover:bg-primary hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 w-full md:w-auto justify-center"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-primary text-primary font-semibold text-sm hover:bg-primary hover:text-on-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 w-full md:w-auto justify-center"
               >
                 <CalendarPlus size={18} aria-hidden="true" />
                 Add to Calendar
@@ -215,7 +265,7 @@ export default function EventDetail() {
           <h2 className="text-2xl font-bold text-heading mb-6">
             About This Event
           </h2>
-          
+
           {event.description ? (
             <div className="prose max-w-4xl text-body leading-relaxed text-lg whitespace-pre-line">
               {event.description}
