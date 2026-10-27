@@ -54,12 +54,21 @@ export default function EventsList() {
   const [error, setError] = useState(null);
   const shouldReduceMotion = useReducedMotion();
 
+
+  // Shared API request — does not update React state.
+  async function fetchUpcomingEvents() {
+    const res = await api.get('/events?upcoming=true');
+    return Array.isArray(res.data) ? res.data : [];
+  }
+
+  // Used when the user manually retries after an error.
   const loadEvents = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const res = await api.get('/events?upcoming=true');
-      setEvents(Array.isArray(res.data) ? res.data : []);
+      const data = await fetchUpcomingEvents();
+      setEvents(data);
     } catch (err) {
       setError(err.message || 'Failed to load events');
     } finally {
@@ -67,9 +76,32 @@ export default function EventsList() {
     }
   }, []);
 
+  // Initial fetch: state updates happen in asynchronous callbacks.
   useEffect(() => {
-    loadEvents();
-  }, [loadEvents]);
+    let cancelled = false;
+
+    fetchUpcomingEvents()
+      .then((data) => {
+        if (!cancelled) {
+          setEvents(data);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load events');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
 
   const containerVariants = shouldReduceMotion
     ? undefined
