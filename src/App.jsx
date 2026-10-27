@@ -35,9 +35,9 @@ import Mission from './section/Mission';
 
 // Public pages — eager (share the initial payload with the public site)
 import MinistryReadMore from './pages/MinistryReadMore';
-import MinistrySignup from './pages/MinistrySignup';
+
 import MassTime from './pages/MassTime';
-import ParishRegistration from './pages/ParishRegistration';
+
 import Staff from './pages/Staff';
 import PhotoAlbum from './pages/PhotoAlbum';
 import AdorationTime from './pages/AdorationTime';
@@ -75,9 +75,6 @@ const GalleryManager = lazy(() =>
   import('./pages/parish-admin/GalleryManager')
 );
 const GroupsManager = lazy(() => import('./pages/parish-admin/GroupsManager'));
-const SettingsManager = lazy(() =>
-  import('./pages/parish-admin/SettingsManager')
-);
 const StaffManager = lazy(() => import('./pages/parish-admin/StaffManager'));
 const LivestreamsManager = lazy(() =>
   import('./pages/parish-admin/LivestreamsManager')
@@ -145,7 +142,6 @@ const App = () => {
                   <Route path="announcements" element={<BulletinsManager />} />
                   <Route path="gallery" element={<GalleryManager />} />
                   <Route path="groups" element={<GroupsManager />} />
-                  <Route path="settings" element={<SettingsManager />} />
                   <Route path="staff" element={<StaffManager />} />
                   <Route path="livestreams" element={<LivestreamsManager />} />
                 </Route>
@@ -175,15 +171,10 @@ const App = () => {
 
                 {/* Ministry */}
                 <Route path="readmore" element={<MinistryReadMore />} />
-                <Route path="signup" element={<MinistrySignup />} />
 
                 {/* General */}
                 <Route path="get-involved" element={<GetInvolved />} />
                 <Route path="groups/:slug" element={<GroupDetail />} />
-                <Route
-                  path="parish-registration"
-                  element={<ParishRegistration />}
-                />
                 <Route path="staff" element={<Staff />} />
                 <Route path="give" element={<Give />} />
               </Route>
