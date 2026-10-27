@@ -46,13 +46,13 @@ import {
 import './Sacraments.css';
 
 // Import images
-import baptismImg from '../assets/Sacraments/baptism.jpg';
-import eucharistImg from '../assets/Sacraments/eucharist.jpg';
-import confirmationImg from '../assets/Sacraments/confirmation.jpg';
-import confessionImg from '../assets/Sacraments/confession.jpg';
-import anointingImg from '../assets/Sacraments/anointing.jpg';
-import holyOrdersImg from '../assets/Sacraments/holy-orders.jpg';
-import matrimonyImg from '../assets/Sacraments/matrimony.jpg';
+import baptismImg from '../assets/Sacraments/baptism.webp';
+import eucharistImg from '../assets/Sacraments/eucharist.webp';
+import confirmationImg from '../assets/Sacraments/confirmation.webp';
+import confessionImg from '../assets/Sacraments/confession.webp';
+import anointingImg from '../assets/Sacraments/anointing.webp';
+import holyOrdersImg from '../assets/Sacraments/holy-orders.webp';
+import matrimonyImg from '../assets/Sacraments/matrimony.webp';
 
 /**
  * The seven sacraments.

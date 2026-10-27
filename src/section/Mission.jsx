@@ -24,7 +24,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 import { Cross, Heart, Users, Anchor } from 'lucide-react';
-import Groto from '../assets/Groto.jpg';
+import Groto from '../assets/Groto.webp';
 import './Mission.css';
 
 /**

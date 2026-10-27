@@ -14,11 +14,11 @@ import {
 import './history.css';
 
 // Import images
-import ctkMainImg from '../assets/church.jpg';
-import ctkSideImg from '../assets/church2.jpg';
-import ctkMassImg from '../assets/bishops.jpg';
-import groto from '../assets/Groto.jpg';
-import sjtePlaceholderImg from '../assets/history/Sjte.jpeg';
+import ctkMainImg from '../assets/church.webp';
+import ctkSideImg from '../assets/church2.webp';
+import ctkMassImg from '../assets/bishops.webp';
+import groto from '../assets/Groto.webp';
+import sjtePlaceholderImg from '../assets/history/Sjte.webp';
 
 const History = () => {
   const [activeTab, setActiveTab] = useState('ctk');

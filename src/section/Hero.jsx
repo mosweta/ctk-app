@@ -10,13 +10,12 @@ import {
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 
-import churchDesktop from '../assets/church.jpg';
-import churchMobile from '../assets/churchP.png';
-import bishopsDesktop from '../assets/churchL.png';
-import bishopsMobile from '../assets/churchE.jpeg';
-import cmaDesktop from '../assets/cma.jpg';
-import cmaMobile from '../assets/cmaP.png';
-import grotoDesktop from '../assets/Groto.jpg';
+import churchDesktop from '../assets/church.webp';
+import churchMobile from '../assets/churchP.webp';
+import bishopsDesktop from '../assets/churchL.webp';
+import bishopsMobile from '../assets/churchE.webp';
+import cmaDesktop from '../assets/cma.webp';
+import cmaMobile from '../assets/cmaP.webp';
 
 /** Auto-advance interval in milliseconds. */
 const ROTATE_MS = 8000;
