@@ -3,10 +3,26 @@
  *
  * Lists all events (drafts and published), allows creating, editing,
  * publishing, and deleting.
+ *
+ * Loading flow:
+ *   - On mount, `loading` starts true and the fetch effect only sets
+ *     state AFTER the request settles. This avoids a synchronous
+ *     `setState` inside the effect body, which the
+ *     react-hooks/set-state-in-effect rule flags.
+ *   - For refreshes triggered by the user (retry, after create/edit),
+ *     `refresh()` sets loading true immediately so the loading state
+ *     is visible during the request.
+ *
+ * Upload flow:
+ *   - Large images are downscaled client-side before upload via
+ *     src/lib/downscaleImage.js (max 1920px on the longer edge).
+ *   - If downscaling fails for any reason, the original file is
+ *     uploaded unchanged.
  */
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../../lib/apiClient';
+import { downscaleImage } from '../../lib/downscaleImage';
 import {
   Plus,
   Edit2,
@@ -17,61 +33,178 @@ import {
   Loader2,
   AlertCircle,
   Image as ImageIcon,
+  X,
 } from 'lucide-react';
+
+const STATUS_META = {
+  draft: {
+    label: 'Draft',
+    className: 'bg-surface-alt text-muted border border-border',
+  },
+  published: {
+    label: 'Published',
+    className:
+      'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300',
+  },
+  archived: {
+    label: 'Archived',
+    className:
+      'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200',
+  },
+  cancelled: {
+    label: 'Cancelled',
+    className: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-200',
+  },
+};
+
+function isoToLocalInput(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}
+
+function formatEventDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 export default function EventsManager() {
   const [events, setEvents] = useState([]);
+  // Starts true: this covers the initial fetch without needing to
+  // call setLoading(true) inside the effect.
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
 
+  const [busyIds, setBusyIds] = useState(() => new Set());
 
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
-  const loadEvents = async () => {
+  // -------------------------------------------------------------------
+  // Initial fetch
+  //
+  // Deliberately does NOT call setLoading(true) — `loading` already
+  // starts true. All setState calls happen after `await`, so nothing
+  // runs synchronously in the effect body.
+  // -------------------------------------------------------------------
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await api.authGet('/admin/events');
+        if (cancelled || !mountedRef.current) return;
+        setEvents(Array.isArray(res.data) ? res.data : []);
+        setError('');
+      } catch (err) {
+        if (cancelled || !mountedRef.current) return;
+        setError(err.message || 'Failed to load events');
+      } finally {
+        if (!cancelled && mountedRef.current) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // -------------------------------------------------------------------
+  // Explicit refresh — used by the retry button and after create/edit.
+  // Safe to call setLoading(true) here because this is invoked from a
+  // user interaction, not from an effect body.
+  // -------------------------------------------------------------------
+  const refresh = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
       const res = await api.authGet('/admin/events');
-      setEvents(res.data);
+      if (!mountedRef.current) return;
+      setEvents(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      setError(err.message);
+      if (!mountedRef.current) return;
+      setError(err.message || 'Failed to load events');
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
-  };
-
-    useEffect(() => {
-    loadEvents();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this event permanently? This cannot be undone.')) return;
+  const markBusy = (id, busy) =>
+    setBusyIds((prev) => {
+      const next = new Set(prev);
+      if (busy) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+
+  const handleDelete = async (event) => {
+    if (
+      !window.confirm(
+        `Delete "${event.title}" permanently? This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    markBusy(event.id, true);
     try {
-      await api.authDelete(`/admin/events/${id}`);
-      setEvents((prev) => prev.filter((e) => e.id !== id));
+      await api.authDelete(`/admin/events/${event.id}`);
+      if (!mountedRef.current) return;
+      setEvents((prev) => prev.filter((e) => e.id !== event.id));
     } catch (err) {
-      alert(err.message);
+      if (!mountedRef.current) return;
+      alert(err.message || 'Failed to delete event');
+    } finally {
+      if (mountedRef.current) markBusy(event.id, false);
     }
   };
 
   const handleTogglePublish = async (event) => {
+    if (event.status !== 'draft' && event.status !== 'published') return;
+
+    const newStatus = event.status === 'published' ? 'draft' : 'published';
+
+    markBusy(event.id, true);
     try {
-      const newStatus = event.status === 'published' ? 'draft' : 'published';
       const res = await api.authPut(`/admin/events/${event.id}`, {
         ...event,
         status: newStatus,
       });
-      setEvents((prev) => prev.map((e) => (e.id === event.id ? res.data : e)));
+      if (!mountedRef.current) return;
+      setEvents((prev) =>
+        prev.map((e) => (e.id === event.id ? res.data : e))
+      );
     } catch (err) {
-      alert(err.message);
+      if (!mountedRef.current) return;
+      alert(err.message || 'Failed to update event status');
+    } finally {
+      if (mountedRef.current) markBusy(event.id, false);
     }
   };
 
   const handleFormSuccess = () => {
     setShowForm(false);
     setEditingEvent(null);
-    loadEvents();
+    refresh();
   };
 
   if (showForm || editingEvent) {
@@ -89,128 +222,234 @@ export default function EventsManager() {
 
   return (
     <div className="max-w-6xl mx-auto">
+      {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Events</h2>
-          <p className="text-gray-500 text-sm">Manage parish events</p>
+          <h2 className="text-2xl font-bold text-heading">Events</h2>
+          <p className="text-muted text-sm">
+            Manage parish events. New events start as drafts and are not
+            visible on the public site until published.
+          </p>
         </div>
         <button
+          type="button"
           onClick={() => setShowForm(true)}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg
-                     bg-[#800000] text-white text-sm font-semibold
-                     hover:bg-[#660000] transition-colors"
+                     bg-primary text-on-primary text-sm font-semibold
+                     hover:bg-primary-hover transition-colors
+                     focus-visible:outline-none focus-visible:ring-2
+                     focus-visible:ring-primary focus-visible:ring-offset-2
+                     shrink-0"
         >
-          <Plus size={18} />
+          <Plus size={18} aria-hidden="true" />
           New Event
         </button>
       </div>
 
+      {/* List */}
       {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 text-[#800000] animate-spin" />
+        <div
+          className="flex flex-col items-center justify-center h-64 gap-3 bg-surface rounded-xl border border-border"
+          role="status"
+          aria-live="polite"
+        >
+          <Loader2
+            className="w-8 h-8 text-primary animate-spin"
+            aria-hidden="true"
+          />
+          <span className="text-sm text-muted">Loading events…</span>
         </div>
       ) : error ? (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
-          <AlertCircle className="inline-block mr-2" size={18} />
-          {error}
+        <div
+          role="alert"
+          className="bg-red-500/10 border border-red-500/30 text-danger p-4 rounded-lg flex flex-col sm:flex-row sm:items-center gap-3"
+        >
+          <div className="flex items-start gap-2 flex-1">
+            <AlertCircle
+              size={18}
+              className="shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
+            <span>{error}</span>
+          </div>
+          <button
+            type="button"
+            onClick={refresh}
+            className="px-4 py-2 rounded-lg border-2 border-primary text-primary
+                       text-sm font-semibold hover:bg-primary hover:text-on-primary
+                       transition-colors shrink-0
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            Try again
+          </button>
         </div>
       ) : events.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
-          <Calendar size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">No events yet.</p>
+        <div className="text-center py-16 bg-surface rounded-xl border border-border">
+          <Calendar
+            size={48}
+            className="mx-auto text-muted mb-4"
+            aria-hidden="true"
+          />
+          <p className="text-heading font-medium mb-1">No events yet</p>
+          <p className="text-sm text-muted mb-4">
+            Create the first event to get started.
+          </p>
           <button
+            type="button"
             onClick={() => setShowForm(true)}
-            className="mt-4 text-[#800000] font-medium hover:underline"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg
+                       bg-primary text-on-primary text-sm font-semibold
+                       hover:bg-primary-hover transition-colors
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-primary focus-visible:ring-offset-2"
           >
-            Create the first one
+            <Plus size={16} aria-hidden="true" />
+            Create the first event
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Title
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Start
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {events.map((event) => (
-                <tr key={event.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {event.image_url && (
-                        <img
-                          src={event.image_url}
-                          alt=""
-                          className="w-12 h-8 rounded object-cover"
-                        />
-                      )}
-                      <div>
-                        <p className="font-medium text-gray-900">{event.title}</p>
-                        <p className="text-xs text-gray-500">
-                          {event.location || 'No location'}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {new Date(event.start_time).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        event.status === 'published'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {event.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="inline-flex items-center gap-1">
-                      <button
-                        onClick={() => handleTogglePublish(event)}
-                        title={event.status === 'published' ? 'Unpublish' : 'Publish'}
-                        className="p-2 text-gray-500 hover:text-[#800000] hover:bg-gray-100 rounded-lg transition-colors"
-                      >
-                        {event.status === 'published' ? (
-                          <EyeOff size={16} />
-                        ) : (
-                          <Eye size={16} />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => setEditingEvent(event)}
-                        title="Edit"
-                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(event.id)}
-                        title="Delete"
-                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
+        <div className="bg-surface rounded-xl shadow-sm border border-border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px]">
+              <thead className="bg-surface-alt border-b border-border">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+                    Title
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+                    Start
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {events.map((event) => {
+                  const busy = busyIds.has(event.id);
+                  const status = STATUS_META[event.status] || STATUS_META.draft;
+                  const canToggle =
+                    event.status === 'draft' || event.status === 'published';
+
+                  return (
+                    <tr
+                      key={event.id}
+                      className="hover:bg-surface-alt/50 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {event.image_url ? (
+                            <img
+                              src={event.image_url}
+                              alt=""
+                              className="w-12 h-8 rounded object-cover shrink-0"
+                            />
+                          ) : (
+                            <div
+                              className="w-12 h-8 rounded bg-surface-alt flex items-center justify-center shrink-0"
+                              aria-hidden="true"
+                            >
+                              <Calendar size={14} className="text-muted" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-medium text-heading truncate">
+                              {event.title}
+                            </p>
+                            <p className="text-xs text-muted truncate">
+                              {event.location || 'No location'}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-body whitespace-nowrap">
+                        {formatEventDate(event.start_time)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${status.className}`}
+                        >
+                          {status.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePublish(event)}
+                            disabled={!canToggle || busy}
+                            aria-label={
+                              !canToggle
+                                ? `Cannot toggle status of ${event.title}; edit to change from ${event.status}`
+                                : event.status === 'published'
+                                ? `Unpublish ${event.title}`
+                                : `Publish ${event.title}`
+                            }
+                            title={
+                              !canToggle
+                                ? 'Edit the event to change this status'
+                                : event.status === 'published'
+                                ? 'Unpublish'
+                                : 'Publish'
+                            }
+                            className="p-2 rounded-lg text-muted hover:text-primary hover:bg-surface-alt
+                                       transition-colors
+                                       focus-visible:outline-none focus-visible:ring-2
+                                       focus-visible:ring-primary
+                                       disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            {busy ? (
+                              <Loader2
+                                size={16}
+                                className="animate-spin"
+                                aria-hidden="true"
+                              />
+                            ) : event.status === 'published' ? (
+                              <EyeOff size={16} aria-hidden="true" />
+                            ) : (
+                              <Eye size={16} aria-hidden="true" />
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingEvent(event)}
+                            disabled={busy}
+                            aria-label={`Edit ${event.title}`}
+                            title="Edit"
+                            className="p-2 rounded-lg text-muted hover:text-primary hover:bg-surface-alt
+                                       transition-colors
+                                       focus-visible:outline-none focus-visible:ring-2
+                                       focus-visible:ring-primary
+                                       disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <Edit2 size={16} aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(event)}
+                            disabled={busy}
+                            aria-label={`Delete ${event.title}`}
+                            title="Delete"
+                            className="p-2 rounded-lg text-muted hover:text-danger hover:bg-red-500/10
+                                       transition-colors
+                                       focus-visible:outline-none focus-visible:ring-2
+                                       focus-visible:ring-primary
+                                       disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <Trash2 size={16} aria-hidden="true" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
@@ -218,19 +457,16 @@ export default function EventsManager() {
 }
 
 // ---------------------------------------------------------------------
-// Event Form (inline component)
+// Event Form
 // ---------------------------------------------------------------------
+
 function EventForm({ event, onSuccess, onCancel }) {
   const isEditing = !!event;
   const [formData, setFormData] = useState({
     title: event?.title || '',
     description: event?.description || '',
-    start_time: event?.start_time
-      ? new Date(event.start_time).toISOString().slice(0, 16)
-      : '',
-    end_time: event?.end_time
-      ? new Date(event.end_time).toISOString().slice(0, 16)
-      : '',
+    start_time: isoToLocalInput(event?.start_time),
+    end_time: isoToLocalInput(event?.end_time),
     location: event?.location || '',
     category: event?.category || '',
     status: event?.status || 'draft',
@@ -239,43 +475,77 @@ function EventForm({ event, onSuccess, onCancel }) {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const fileInputRef = useRef(null);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (fieldErrors[e.target.name]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[e.target.name];
+        return next;
+      });
+    }
+  };
+
+  const validate = () => {
+    const errors = {};
+    if (!formData.title.trim()) errors.title = 'Title is required';
+    if (!formData.start_time) {
+      errors.start_time = 'Start date and time is required';
+    } else if (Number.isNaN(new Date(formData.start_time).getTime())) {
+      errors.start_time = 'Start date is invalid';
+    }
+    if (formData.end_time) {
+      const s = new Date(formData.start_time).getTime();
+      const e = new Date(formData.end_time).getTime();
+      if (!Number.isNaN(s) && !Number.isNaN(e) && e < s) {
+        errors.end_time = 'End time cannot be before the start time';
+      }
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const original = e.target.files?.[0];
+    if (!original) return;
 
-    if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file (JPEG, PNG, WebP)');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(original.type)) {
+      setError('Please upload a JPEG, PNG, or WebP image.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be less than 5MB');
+    if (original.size > 5 * 1024 * 1024) {
+      setError('Image must be less than 5MB.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
     setUploading(true);
     setError('');
-
     try {
-      const { supabase } = await import('../../lib/supabaseClient');
+      // Downscale large images before upload. downscaleImage() never
+      // throws — it falls back to the original file on any failure.
+      const file = await downscaleImage(original);
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const { supabase } = await import('../../lib/supabaseClient');
+      const ext = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(2)}.${ext}`;
       const filePath = `events/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('media')
         .upload(filePath, file);
-
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage.from('media').getPublicUrl(filePath);
-
       setFormData((prev) => ({ ...prev, image_url: data.publicUrl }));
+
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       console.error(err);
       setError('Image upload failed. Please try again.');
@@ -284,16 +554,31 @@ function EventForm({ event, onSuccess, onCancel }) {
     }
   };
 
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({ ...prev, image_url: '' }));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading || uploading) return;
+    if (!validate()) return;
+
     setError('');
     setLoading(true);
 
     try {
       const payload = {
         ...formData,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        location: formData.location.trim(),
+        category: formData.category.trim(),
         start_time: new Date(formData.start_time).toISOString(),
-        end_time: formData.end_time ? new Date(formData.end_time).toISOString() : null,
+        end_time: formData.end_time
+          ? new Date(formData.end_time).toISOString()
+          : null,
+        image_url: formData.image_url || '',
       };
 
       if (isEditing) {
@@ -303,178 +588,249 @@ function EventForm({ event, onSuccess, onCancel }) {
       }
       onSuccess();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to save event');
     } finally {
       setLoading(false);
     }
   };
 
+  const inputClass =
+    'w-full px-3 py-2 bg-background text-body border border-border-strong rounded-lg ' +
+    'focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ' +
+    'disabled:opacity-60 disabled:cursor-not-allowed';
+
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="max-w-2xl mx-auto bg-surface rounded-xl shadow-sm border border-border p-6">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">
+        <h2 className="text-xl font-bold text-heading">
           {isEditing ? 'Edit Event' : 'New Event'}
         </h2>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted">
           {isEditing
             ? 'Update the event details below.'
-            : 'Fill in the details for the new event.'}
+            : 'Fill in the details for the new event. It will start as a draft.'}
         </p>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-sm mb-4">
+        <div
+          role="alert"
+          className="bg-red-500/10 border border-red-500/30 text-danger p-3 rounded-lg text-sm mb-4"
+        >
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Image Upload */}
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        {/* Image */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-heading mb-2">
             Thumbnail Image (Optional)
           </label>
-          <div className="flex items-center gap-4">
+          <div className="flex items-start gap-4">
             {formData.image_url ? (
-              <div className="relative w-32 h-20 rounded-lg overflow-hidden border border-gray-200 group">
+              <div className="relative w-32 h-20 rounded-lg overflow-hidden border border-border shrink-0">
                 <img
                   src={formData.image_url}
-                  alt="Event thumbnail"
+                  alt=""
                   className="w-full h-full object-cover"
                 />
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, image_url: '' })}
-                  className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-xs font-medium"
+                  onClick={handleRemoveImage}
+                  className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white
+                             hover:bg-black/80 transition-colors
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  aria-label="Remove selected image"
                 >
-                  Remove
+                  <X size={14} aria-hidden="true" />
                 </button>
               </div>
             ) : (
-              <div className="w-32 h-20 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 text-gray-400">
-                <ImageIcon size={24} />
+              <div className="w-32 h-20 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-surface-alt text-muted shrink-0">
+                <ImageIcon size={24} aria-hidden="true" />
               </div>
             )}
 
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <input
+                ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={handleImageUpload}
-                disabled={uploading}
-                className="block w-full text-sm text-gray-500
+                disabled={uploading || loading}
+                className="block w-full text-sm text-muted
                            file:mr-4 file:py-2 file:px-4
                            file:rounded-lg file:border-0
                            file:text-sm file:font-medium
-                           file:bg-[#800000]/10 file:text-[#800000]
-                           hover:file:bg-[#800000]/20
-                           cursor-pointer"
+                           file:bg-primary-light file:text-primary
+                           hover:file:bg-primary/20
+                           cursor-pointer
+                           disabled:cursor-not-allowed disabled:opacity-60"
               />
+              <p className="text-xs text-subtle mt-1">
+                JPEG, PNG, or WebP. Max 5 MB (before resizing).
+              </p>
               {uploading && (
-                <p className="text-xs text-[#800000] mt-2 animate-pulse">
-                  Uploading image...
+                <p
+                  className="text-xs text-primary mt-1 flex items-center gap-1.5"
+                  role="status"
+                >
+                  <Loader2 size={12} className="animate-spin" aria-hidden="true" />
+                  Uploading image…
                 </p>
               )}
             </div>
           </div>
         </div>
 
+        {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Title *
+          <label
+            htmlFor="event-title"
+            className="block text-sm font-medium text-heading mb-1"
+          >
+            Title <span className="text-danger">*</span>
           </label>
           <input
+            id="event-title"
             name="title"
             value={formData.title}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                       focus:outline-none focus:ring-2 focus:ring-[#800000] focus:border-transparent"
+            aria-invalid={fieldErrors.title ? 'true' : undefined}
+            aria-describedby={fieldErrors.title ? 'event-title-error' : undefined}
+            className={inputClass}
           />
+          {fieldErrors.title && (
+            <p id="event-title-error" className="text-xs text-danger mt-1">
+              {fieldErrors.title}
+            </p>
+          )}
         </div>
 
+        {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="event-description"
+            className="block text-sm font-medium text-heading mb-1"
+          >
             Description
           </label>
           <textarea
+            id="event-description"
             name="description"
             value={formData.description}
             onChange={handleChange}
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                       focus:outline-none focus:ring-2 focus:ring-[#800000] focus:border-transparent"
+            className={inputClass}
           />
         </div>
 
+        {/* Start / End */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Start *
+            <label
+              htmlFor="event-start"
+              className="block text-sm font-medium text-heading mb-1"
+            >
+              Start <span className="text-danger">*</span>
             </label>
             <input
+              id="event-start"
               type="datetime-local"
               name="start_time"
               value={formData.start_time}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                         focus:outline-none focus:ring-2 focus:ring-[#800000] focus:border-transparent"
+              aria-invalid={fieldErrors.start_time ? 'true' : undefined}
+              aria-describedby={
+                fieldErrors.start_time ? 'event-start-error' : undefined
+              }
+              className={inputClass}
             />
+            {fieldErrors.start_time && (
+              <p id="event-start-error" className="text-xs text-danger mt-1">
+                {fieldErrors.start_time}
+              </p>
+            )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="event-end"
+              className="block text-sm font-medium text-heading mb-1"
+            >
               End (optional)
             </label>
             <input
+              id="event-end"
               type="datetime-local"
               name="end_time"
               value={formData.end_time}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                         focus:outline-none focus:ring-2 focus:ring-[#800000] focus:border-transparent"
+              aria-invalid={fieldErrors.end_time ? 'true' : undefined}
+              aria-describedby={
+                fieldErrors.end_time ? 'event-end-error' : undefined
+              }
+              className={inputClass}
             />
+            {fieldErrors.end_time && (
+              <p id="event-end-error" className="text-xs text-danger mt-1">
+                {fieldErrors.end_time}
+              </p>
+            )}
           </div>
         </div>
 
+        {/* Location / Category */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="event-location"
+              className="block text-sm font-medium text-heading mb-1"
+            >
               Location
             </label>
             <input
+              id="event-location"
               name="location"
               value={formData.location}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                         focus:outline-none focus:ring-2 focus:ring-[#800000] focus:border-transparent"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="event-category"
+              className="block text-sm font-medium text-heading mb-1"
+            >
               Category
             </label>
             <input
+              id="event-category"
               name="category"
               value={formData.category}
               onChange={handleChange}
               placeholder="e.g. Liturgy, Youth"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                         focus:outline-none focus:ring-2 focus:ring-[#800000] focus:border-transparent"
+              className={inputClass}
             />
           </div>
         </div>
 
+        {/* Status */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="event-status"
+            className="block text-sm font-medium text-heading mb-1"
+          >
             Status
           </label>
           <select
+            id="event-status"
             name="status"
             value={formData.status}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                       focus:outline-none focus:ring-2 focus:ring-[#800000] focus:border-transparent"
+            className={inputClass}
           >
             <option value="draft">Draft (hidden from public)</option>
             <option value="published">Published (visible on site)</option>
@@ -483,21 +839,38 @@ function EventForm({ event, onSuccess, onCancel }) {
           </select>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            disabled={loading || uploading}
+            className="px-4 py-2 rounded-lg text-sm font-medium text-body
+                       hover:bg-surface-alt transition-colors
+                       disabled:opacity-60 disabled:cursor-not-allowed
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-primary"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading || uploading}
-            className="px-5 py-2 rounded-lg text-sm font-semibold bg-[#800000] text-white
-                       hover:bg-[#660000] transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg
+                       text-sm font-semibold bg-primary text-on-primary
+                       hover:bg-primary-hover transition-colors
+                       disabled:opacity-60 disabled:cursor-not-allowed
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-primary focus-visible:ring-offset-2"
           >
-            {loading ? 'Saving...' : isEditing ? 'Update Event' : 'Create Event'}
+            {loading && (
+              <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+            )}
+            {loading
+              ? 'Saving…'
+              : isEditing
+              ? 'Update Event'
+              : 'Create Event'}
           </button>
         </div>
       </form>
