@@ -78,7 +78,8 @@ router.get('/events/:id', async (req, res, next) => {
 });
 
 // Livestreams (public)
-router.get('/livestreams', async (req, res, _next) => {
+
+router.get('/livestreams', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('livestreams')
@@ -90,8 +91,13 @@ router.get('/livestreams', async (req, res, _next) => {
     if (error) throw error;
     res.json({ success: true, data });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error('Failed to fetch livestreams:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch livestreams',
+    });
   }
 });
+
 
 export default router;
