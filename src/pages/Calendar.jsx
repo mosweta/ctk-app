@@ -1,4 +1,22 @@
-import { useState, useEffect, useCallback } from 'react';
+/**
+ * Parish Calendar.
+ *
+ * Month-view calendar of parish events, plus a selected-day modal
+ * showing each event's details.
+ *
+ * Loading flow:
+ *   - `loading` starts true. The mount effect only sets state AFTER
+ *     the fetch settles, which avoids the react-hooks/set-state-in-effect
+ *     rule that flags synchronous setState in an effect body.
+ *   - `refresh()` is used by the retry button and sets loading true
+ *     immediately so the user sees the spinner during the request.
+ *
+ * The selected-date reset happens inside the month-navigation
+ * handlers (prevMonth / nextMonth / goToToday) so there is no effect
+ * that reacts to `currentDate` changes.
+ */
+
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { api } from '../lib/apiClient';
 import {
@@ -20,50 +38,98 @@ export default function Calendar() {
   const [error, setError] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
-  
+
   const shouldReduceMotion = useReducedMotion();
 
-  const loadEvents = useCallback(async () => {
+  // Tracks whether the component is still mounted so async responses
+  // don't update state after unmount.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  // -------------------------------------------------------------------
+  // Initial fetch
+  //
+  // Deliberately does NOT call setLoading(true) — `loading` already
+  // starts true. All setState calls happen after `await`, so nothing
+  // runs synchronously in the effect body.
+  // -------------------------------------------------------------------
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.get('/events');
+        if (cancelled || !mountedRef.current) return;
+        setEvents(Array.isArray(res.data) ? res.data : []);
+        setError(null);
+      } catch (err) {
+        if (cancelled || !mountedRef.current) return;
+        setError(err.message || 'Failed to load events');
+      } finally {
+        if (!cancelled && mountedRef.current) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // -------------------------------------------------------------------
+  // Explicit refresh — used by the retry button.
+  // Safe to call setLoading(true) here because this is invoked from a
+  // user interaction, not from an effect body.
+  // -------------------------------------------------------------------
+  const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await api.get('/events');
+      if (!mountedRef.current) return;
       setEvents(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
+      if (!mountedRef.current) return;
       setError(err.message || 'Failed to load events');
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    loadEvents();
-  }, [loadEvents]);
-
-  useEffect(() => {
-    setSelectedDate(null);
-  }, [currentDate]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDay = new Date(year, month, 1).getDay();
   const today = new Date();
-  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+  const isCurrentMonth =
+    today.getFullYear() === year && today.getMonth() === month;
 
   const eventsByDay = {};
   events.forEach((e) => {
     const d = new Date(e.start_time);
-    if (!Number.isNaN(d.getTime()) && d.getFullYear() === year && d.getMonth() === month) {
+    if (
+      !Number.isNaN(d.getTime()) &&
+      d.getFullYear() === year &&
+      d.getMonth() === month
+    ) {
       const key = d.getDate();
       if (!eventsByDay[key]) eventsByDay[key] = [];
       eventsByDay[key].push(e);
     }
   });
 
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
-  const goToToday = () => setCurrentDate(new Date());
+  // Month navigation also clears the selected date so the modal can
+  // never show a day that belongs to a different month.
+  const changeMonth = (date) => {
+    setSelectedDate(null);
+    setCurrentDate(date);
+  };
+
+  const prevMonth = () => changeMonth(new Date(year, month - 1, 1));
+  const nextMonth = () => changeMonth(new Date(year, month + 1, 1));
+  const goToToday = () => changeMonth(new Date());
 
   const days = [];
   for (let i = 0; i < firstDay; i++) days.push(null);
@@ -74,16 +140,19 @@ export default function Calendar() {
   return (
     <main className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        
         {/* Page Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-heading mb-2">Parish Calendar</h1>
-            <p className="text-body">Browse upcoming Masses, meetings, and events</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-heading mb-2">
+              Parish Calendar
+            </h1>
+            <p className="text-body">
+              Browse upcoming Masses, meetings, and events
+            </p>
           </div>
           <Link
             to="/events"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg font-semibold hover:bg-primary-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-lg font-semibold hover:bg-primary-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             View Events List
           </Link>
@@ -91,48 +160,71 @@ export default function Calendar() {
 
         {/* States & Calendar Grid */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 bg-surface rounded-2xl border border-border gap-4">
-            <Loader2 className="animate-spin text-primary" size={40} />
-            <p className="text-muted text-sm">Loading calendar...</p>
+          <div
+            className="flex flex-col items-center justify-center py-32 bg-surface rounded-2xl border border-border gap-4"
+            role="status"
+            aria-live="polite"
+          >
+            <Loader2
+              className="animate-spin text-primary"
+              size={40}
+              aria-hidden="true"
+            />
+            <p className="text-muted text-sm">Loading calendar…</p>
           </div>
         ) : error ? (
-          <div className="text-center py-24 bg-surface rounded-2xl border border-border max-w-2xl mx-auto flex flex-col items-center gap-4">
-            <AlertCircle size={40} className="text-danger mb-2" />
-            <p className="text-body">We couldn’t load the calendar right now.</p>
+          <div
+            role="alert"
+            className="text-center py-24 bg-surface rounded-2xl border border-border max-w-2xl mx-auto flex flex-col items-center gap-4"
+          >
+            <AlertCircle
+              size={40}
+              className="text-danger mb-2"
+              aria-hidden="true"
+            />
+            <p className="text-body">
+              We couldn’t load the calendar right now.
+            </p>
             <button
-              onClick={loadEvents}
-              className="mt-2 px-6 py-2.5 rounded-lg border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-white transition-colors"
+              type="button"
+              onClick={refresh}
+              className="mt-2 px-6 py-2.5 rounded-lg border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-on-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               Try again
             </button>
           </div>
         ) : (
           <div className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
-            
             {/* Toolbar */}
             <div className="bg-surface-alt/50 p-4 border-b border-border flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={prevMonth}
                   className="p-2 rounded-lg hover:bg-surface border border-transparent hover:border-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label="Previous month"
                 >
-                  <ChevronLeft size={20} className="text-heading" />
+                  <ChevronLeft size={20} className="text-heading" aria-hidden="true" />
                 </button>
                 <button
+                  type="button"
                   onClick={nextMonth}
                   className="p-2 rounded-lg hover:bg-surface border border-transparent hover:border-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label="Next month"
                 >
-                  <ChevronRight size={20} className="text-heading" />
+                  <ChevronRight size={20} className="text-heading" aria-hidden="true" />
                 </button>
               </div>
 
               <h2 className="text-xl font-bold text-heading order-first w-full sm:order-none sm:w-auto text-center">
-                {currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
+                {currentDate.toLocaleString('en-US', {
+                  month: 'long',
+                  year: 'numeric',
+                })}
               </h2>
 
               <button
+                type="button"
                 onClick={goToToday}
                 disabled={isCurrentMonth}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
@@ -148,7 +240,10 @@ export default function Calendar() {
             {/* Day Headers */}
             <div className="grid grid-cols-7 bg-surface border-b border-border">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-                <div key={d} className="py-3 text-center text-xs font-bold text-muted uppercase tracking-wider">
+                <div
+                  key={d}
+                  className="py-3 text-center text-xs font-bold text-muted uppercase tracking-wider"
+                >
                   {d}
                 </div>
               ))}
@@ -158,7 +253,12 @@ export default function Calendar() {
             <div className="grid grid-cols-7 gap-px bg-border">
               {days.map((day, i) => {
                 if (day === null) {
-                  return <div key={`empty-${i}`} className="bg-surface-alt/30 min-h-[80px] sm:min-h-[100px]" />;
+                  return (
+                    <div
+                      key={`empty-${i}`}
+                      className="bg-surface-alt/30 min-h-[80px] sm:min-h-[100px]"
+                    />
+                  );
                 }
 
                 const isToday = isCurrentMonth && day === today.getDate();
@@ -167,6 +267,7 @@ export default function Calendar() {
 
                 return (
                   <button
+                    type="button"
                     key={day}
                     onClick={() => hasEvents && setSelectedDate(day)}
                     className={`relative bg-surface min-h-[80px] sm:min-h-[100px] p-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary
@@ -175,8 +276,11 @@ export default function Calendar() {
                     `}
                   >
                     <span
-                      className={`inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 text-sm font-semibold rounded-full mb-1
-                        ${isToday ? 'bg-primary text-white' : 'text-heading'}`}
+                      className={`inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 text-sm font-semibold rounded-full mb-1 ${
+                        isToday
+                          ? 'bg-primary text-on-primary'
+                          : 'text-heading'
+                      }`}
                     >
                       {day}
                     </span>
@@ -195,7 +299,10 @@ export default function Calendar() {
                         </div>
                         <div className="sm:hidden flex gap-1 mt-1">
                           {dayEvents.slice(0, 3).map((_, idx) => (
-                            <span key={idx} className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            <span
+                              key={idx}
+                              className="w-1.5 h-1.5 rounded-full bg-primary"
+                            />
                           ))}
                         </div>
                       </>
@@ -206,7 +313,7 @@ export default function Calendar() {
             </div>
           </div>
         )}
-        
+
         {/* Legend */}
         {!loading && !error && (
           <div className="flex justify-center gap-8 mt-6 text-sm text-muted">
@@ -234,34 +341,45 @@ export default function Calendar() {
               onClick={() => setSelectedDate(null)}
             />
             <motion.div
-              initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.95, y: 20 }}
+              initial={
+                shouldReduceMotion ? false : { opacity: 0, scale: 0.95, y: 20 }
+              }
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              exit={
+                shouldReduceMotion
+                  ? undefined
+                  : { opacity: 0, scale: 0.95, y: 20 }
+              }
               className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none"
             >
               {/* Modal Container */}
               <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg pointer-events-auto max-h-[85vh] flex flex-col border border-border overflow-hidden">
-                
                 {/* Modal Header */}
                 <div className="flex items-start justify-between p-5 sm:p-6 border-b border-border bg-surface-alt/30 shrink-0">
                   <div className="min-w-0 pr-4">
                     <h3 className="text-xl font-bold text-heading break-words">
-                      {new Date(year, month, selectedDate).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
+                      {new Date(year, month, selectedDate).toLocaleDateString(
+                        'en-US',
+                        {
+                          weekday: 'long',
+                          month: 'long',
+                          day: 'numeric',
+                        }
+                      )}
                     </h3>
                     <p className="text-sm text-muted mt-2">
-                      {selectedEvents.length} {selectedEvents.length === 1 ? 'event' : 'events'} scheduled
+                      {selectedEvents.length}{' '}
+                      {selectedEvents.length === 1 ? 'event' : 'events'}{' '}
+                      scheduled
                     </p>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setSelectedDate(null)}
                     className="p-2 -mr-2 text-muted hover:text-heading hover:bg-surface rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
                     aria-label="Close modal"
                   >
-                    <X size={20} />
+                    <X size={20} aria-hidden="true" />
                   </button>
                 </div>
 
@@ -269,16 +387,25 @@ export default function Calendar() {
                 <div className="p-4 sm:p-6 overflow-y-auto overflow-x-hidden flex flex-col gap-4">
                   {selectedEvents.map((ev) => {
                     const gCalUrl = getGoogleCalendarUrl(ev);
-                    
+
                     return (
-                      <div 
-                        key={ev.id} 
+                      <div
+                        key={ev.id}
                         className="bg-surface border border-border rounded-xl p-5 hover:border-primary/40 transition-colors w-full flex flex-col"
                       >
                         {/* Time */}
                         <span className="text-xs font-bold uppercase tracking-wider text-primary mb-1.5">
-                          {new Date(ev.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                          {ev.end_time && ` – ${new Date(ev.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`}
+                          {new Date(ev.start_time).toLocaleTimeString(
+                            'en-US',
+                            { hour: 'numeric', minute: '2-digit' }
+                          )}
+                          {ev.end_time &&
+                            ` – ${new Date(
+                              ev.end_time
+                            ).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })}`}
                         </span>
 
                         {/* Title */}
@@ -289,7 +416,11 @@ export default function Calendar() {
                         {/* Location */}
                         {ev.location && (
                           <div className="flex items-start gap-1.5 text-sm text-muted mb-3">
-                            <MapPin size={16} className="shrink-0 mt-0.5" aria-hidden="true" />
+                            <MapPin
+                              size={16}
+                              className="shrink-0 mt-0.5"
+                              aria-hidden="true"
+                            />
                             <span className="break-words [overflow-wrap:anywhere]">
                               {ev.location}
                             </span>
@@ -312,7 +443,7 @@ export default function Calendar() {
                             View Details
                             <ExternalLink size={14} aria-hidden="true" />
                           </Link>
-                          
+
                           {gCalUrl && (
                             <a
                               href={gCalUrl}
