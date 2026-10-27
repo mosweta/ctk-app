@@ -68,50 +68,62 @@ function looksLikeEmail(value) {
 
 export default function GroupDetail() {
   const { slug } = useParams();
-  const [group, setGroup] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [imageFailed, setImageFailed] = useState(false);
-  const [reloadToken, setReloadToken] = useState(0);
+const [request, setRequest] = useState({
+  slug: null,
+  status: 'loading',
+  group: null,
+  error: null,
+});
+const [imageFailed, setImageFailed] = useState(false);
+const [reloadToken, setReloadToken] = useState(0);
+
+const loading = request.slug !== slug || request.status === 'loading';
+const group = request.slug === slug ? request.group : null;
+const error = request.slug === slug ? request.error : null;
   const shouldReduceMotion = useReducedMotion();
 
-  useEffect(() => {
-    let cancelled = false;
+  
+useEffect(() => {
+  let cancelled = false;
 
-    // Reset all request-scoped state before each fetch so a slug
-    // change cannot display the previous group's content.
-    setLoading(true);
-    setError(null);
-    setGroup(null);
-    setImageFailed(false);
+  const load = async () => {
+    try {
+      const res = await api.get(`/groups/${slug}`);
 
-    const load = async () => {
-      try {
-        const res = await api.get(`/groups/${slug}`);
-        if (cancelled) return;
-        setGroup(res.data);
-      } catch (err) {
-        if (cancelled) return;
-        // apiClient throws ApiError with .status. Distinguish 404
-        // (unknown slug) from everything else (network, server).
-        const status = err?.status;
-        setError({
+      if (cancelled) return;
+
+      setRequest({
+        slug,
+        status: 'success',
+        group: res.data,
+        error: null,
+      });
+    } catch (err) {
+      if (cancelled) return;
+
+      const status = err?.status;
+      setRequest({
+        slug,
+        status: 'error',
+        group: null,
+        error: {
           kind: status === 404 ? 'not-found' : 'request-failed',
           message:
             status === 404
               ? 'This group could not be found. It may have been renamed or removed.'
               : 'We could not load this group right now. Please try again.',
-        });
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
+        },
+      });
+    }
+  };
 
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [slug, reloadToken]);
+  load();
+
+  return () => {
+    cancelled = true;
+  };
+}, [slug, reloadToken]);
+
 
   const retry = useCallback(() => {
     setReloadToken((t) => t + 1);
