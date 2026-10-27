@@ -8,7 +8,7 @@
 
 import { supabaseAdmin } from '../lib/supabaseClient.js';
 import { AppError } from '../middleware/errorMiddleware.js';
-
+import sanitizeHtml from 'sanitize-html';
 // ---------------------------------------------------------------------
 // Audit Logging Helper
 // ---------------------------------------------------------------------
@@ -411,10 +411,30 @@ export const getBulletinById = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+// Helper to sanitize the nested sections of a bulletin
+const sanitizeSections = (sections) => {
+  if (!Array.isArray(sections)) return [];
+  
+  return sections.map((section) => ({
+    ...section,
+    items: (section.items || []).map((item) => ({
+      ...item,
+      // Only allow safe formatting tags inside the text
+      html: sanitizeHtml(item.html || '', {
+        allowedTags: ['p', 'br', 'strong', 'em', 'u', 's', 'ul', 'ol', 'li', 'a', 'span', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+        allowedAttributes: {
+          a: ['href', 'target', 'rel'],
+        },
+      }),
+    })),
+  }));
+};
+
 export const createBulletin = async (req, res, next) => {
   try {
     const payload = {
       ...req.body,
+      sections: sanitizeSections(req.body.sections), // <-- Added sanitization
       created_by: req.user.id,
     };
     if (payload.status === 'published') {
@@ -434,7 +454,11 @@ export const createBulletin = async (req, res, next) => {
 export const updateBulletin = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const payload = { ...req.body };
+    const payload = { 
+      ...req.body,
+      // Only sanitize if sections are being updated
+      ...(req.body.sections && { sections: sanitizeSections(req.body.sections) })
+    };
     
     if (payload.status === 'published' && !payload.published_at) {
       payload.published_at = new Date().toISOString();
@@ -543,38 +567,6 @@ export const deleteGroup = async (req, res, next) => {
   }
 };
 
-// ---------------------------------------------------------------------
-// Parish Settings
-// ---------------------------------------------------------------------
-export const updateParishSettings = async (req, res, next) => {
-  try {
-    const { settings } = req.body;
-
-    if (!settings || typeof settings !== 'object') {
-      throw new AppError('Settings object required', 400);
-    }
-
-    const updates = Object.entries(settings).map(([key, value]) => ({
-      key,
-      value,
-      updated_by: req.user.id,
-      updated_at: new Date().toISOString(),
-    }));
-
-    const { data, error } = await supabaseAdmin
-      .from('parish_settings')
-      .upsert(updates, { onConflict: 'key' })
-      .select();
-
-    if (error) throw error;
-
-    await logAudit(req.user.id, 'update', 'parish_settings', 'all');
-
-    res.json({ success: true, data });
-  } catch (err) {
-    next(err);
-  }
-};
 
 
 
