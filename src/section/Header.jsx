@@ -48,7 +48,7 @@ import {
   BookOpen,
   X,
 } from 'lucide-react';
-import logo from '../assets/logoctk.png';
+import logo from '../assets/logoctk.webp';
 import ThemeToggle from '../components/ThemeToggle';
 
 const NAV = {
