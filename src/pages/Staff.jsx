@@ -9,12 +9,21 @@ export default function Staff() {
   const [error, setError] = useState(null);
   const shouldReduceMotion = useReducedMotion();
 
+
+  // Fetch staff data without updating React state directly.
+  async function fetchStaff() {
+    const res = await api.get('/staff');
+    return Array.isArray(res.data) ? res.data : [];
+  }
+
+  // Used when the visitor manually retries after an error.
   const loadStaff = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const res = await api.get('/staff');
-      setStaff(Array.isArray(res.data) ? res.data : []);
+      const data = await fetchStaff();
+      setStaff(data);
     } catch (err) {
       setError(err.message || 'Failed to load staff directory');
     } finally {
@@ -22,9 +31,32 @@ export default function Staff() {
     }
   }, []);
 
+  // Initial staff fetch.
   useEffect(() => {
-    loadStaff();
-  }, [loadStaff]);
+    let cancelled = false;
+
+    fetchStaff()
+      .then((data) => {
+        if (!cancelled) {
+          setStaff(data);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load staff directory');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
 
   const containerVariants = shouldReduceMotion
     ? undefined
