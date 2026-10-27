@@ -146,17 +146,28 @@ export default function DailyReadings() {
   }, [data?.color]);
 
   // Filter out empty placeholder readings (e.g. Second Reading on a weekday)
-  const validReadings = useMemo(() => {
-    if (!data?.readings || !Array.isArray(data.readings)) return [];
-    
-    return data.readings.filter((r) => {
-      // Ignore if there's no text or title
-      if (!r.text && !r.title) return false;
-      // Ignore if the text is just a copyright notice
-      if (r.text && r.text.includes('Copyright © Confraternity of Christian Doctrine')) return false;
-      return true;
-    });
-  }, [data?.readings]);
+
+const readings = data?.readings;
+
+const validReadings = useMemo(() => {
+  if (!Array.isArray(readings)) return [];
+
+  return readings.filter((reading) => {
+    if (!reading.text && !reading.title) return false;
+
+    if (
+      reading.text &&
+      reading.text.includes(
+        'Copyright © Confraternity of Christian Doctrine'
+      )
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+}, [readings]);
+
 
   const containerMotion = shouldReduceMotion
     ? undefined
