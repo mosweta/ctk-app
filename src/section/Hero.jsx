@@ -205,11 +205,13 @@ export default function Hero() {
             <picture>
               <source media="(max-width: 768px)" srcSet={slide.img.mobile} />
               <img
-                src={slide.img.desktop}
-                alt=""
-                className="w-full h-full object-cover"
-                loading={index === 0 ? 'eager' : 'lazy'}
-              />
+                  src={slide.img.desktop}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  fetchPriority={index === 0 ? 'high' : 'auto'}
+                  decoding={index === 0 ? 'sync' : 'async'}
+                />
             </picture>
           </motion.div>
         </AnimatePresence>
