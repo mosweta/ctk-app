@@ -20,8 +20,8 @@
  *   - Large images are downscaled client-side before upload via
  *     src/lib/downscaleImage.js. If downscaling fails, the original
  *     file is uploaded.
- *   - Each image is uploaded individually, then its record is created
- *     via POST /admin/gallery with the per-image caption.
+ *   - Each image is uploaded via the backend API (/admin/upload), then 
+ *     its record is created via POST /admin/gallery.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -51,12 +51,6 @@ function titleFromFilename(filename) {
     .replace(/[_-]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-}
-
-/** Generate a unique storage filename, preserving the extension. */
-function storageNameFor(file) {
-  const ext = file.name.split('.').pop();
-  return `${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
 }
 
 export default function GalleryManager() {
@@ -200,21 +194,35 @@ export default function GalleryManager() {
     const failures = [];
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const apiBase = import.meta.env.VITE_API_URL;
+
       for (const item of items) {
         try {
           // Downscale large images before upload. Never throws —
           // falls back to the original file on any failure.
           const uploadFile = await downscaleImage(item.file);
-          const filePath = `gallery/${storageNameFor(uploadFile)}`;
 
-          const { error: storageError } = await supabase.storage
-            .from('media')
-            .upload(filePath, uploadFile);
-          if (storageError) throw storageError;
+          // 1. Upload the file to the backend
+          const formData = new FormData();
+          formData.append('file', uploadFile);
+          formData.append('folder', 'gallery');
 
+          const uploadRes = await fetch(`${apiBase}/admin/upload`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${session?.access_token}`,
+            },
+            body: formData,
+          });
+
+          const uploadData = await uploadRes.json();
+          if (!uploadRes.ok) throw new Error(uploadData.message || 'Upload failed');
+
+          // 2. Save the record in the database
           await api.authPost('/admin/gallery', {
             caption: item.title,
-            storage_path: filePath,
+            storage_path: uploadData.data.path,
           });
         } catch (err) {
           failures.push(

@@ -508,47 +508,51 @@ function EventForm({ event, onSuccess, onCancel }) {
     return Object.keys(errors).length === 0;
   };
 
-  const handleImageUpload = async (e) => {
+    const handleImageUpload = async (e) => {
     const original = e.target.files?.[0];
     if (!original) return;
 
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(original.type)) {
       setError('Please upload a JPEG, PNG, or WebP image.');
-      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
     if (original.size > 5 * 1024 * 1024) {
       setError('Image must be less than 5MB.');
-      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
     setUploading(true);
     setError('');
     try {
-      // Downscale large images before upload. downscaleImage() never
-      // throws — it falls back to the original file on any failure.
       const file = await downscaleImage(original);
 
+      // --- NEW BACKEND UPLOAD LOGIC ---
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'events');
+
       const { supabase } = await import('../../lib/supabaseClient');
-      const ext = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(2)}.${ext}`;
-      const filePath = `events/${fileName}`;
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+          // Note: Do NOT set Content-Type here. The browser sets it automatically for FormData.
+        },
+        body: formData,
+      });
 
-      const { error: uploadError } = await supabase.storage
-        .from('media')
-        .upload(filePath, file);
-      if (uploadError) throw uploadError;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Upload failed');
 
-      const { data } = supabase.storage.from('media').getPublicUrl(filePath);
-      setFormData((prev) => ({ ...prev, image_url: data.publicUrl }));
-
+      setFormData((prev) => ({ ...prev, image_url: data.data.url }));
       if (fileInputRef.current) fileInputRef.current.value = '';
+      // --------------------------------
+
     } catch (err) {
       console.error(err);
-      setError('Image upload failed. Please try again.');
+      setError(err.message || 'Image upload failed. Please try again.');
     } finally {
       setUploading(false);
     }
