@@ -12,12 +12,21 @@ export default function GetInvolved() {
   const [searchQuery, setSearchQuery] = useState('');
   const shouldReduceMotion = useReducedMotion();
 
+
+  // Fetch groups without updating React state directly.
+  async function fetchGroups() {
+    const res = await api.get('/groups');
+    return Array.isArray(res.data) ? res.data : [];
+  }
+
+  // Used by the manual retry button.
   const loadGroups = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const res = await api.get('/groups');
-      setGroups(Array.isArray(res.data) ? res.data : []);
+      const data = await fetchGroups();
+      setGroups(data);
     } catch (err) {
       setError(err.message || 'Failed to load groups');
     } finally {
@@ -25,9 +34,32 @@ export default function GetInvolved() {
     }
   }, []);
 
+  // Initial fetch.
   useEffect(() => {
-    loadGroups();
-  }, [loadGroups]);
+    let cancelled = false;
+
+    fetchGroups()
+      .then((data) => {
+        if (!cancelled) {
+          setGroups(data);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load groups');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
 
   const categories = [
     { key: 'all', label: 'All Groups' },
