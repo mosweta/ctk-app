@@ -13,12 +13,21 @@ export default function PhotoAlbum() {
   const lightboxRef = useRef(null);
   const previousFocusRef = useRef(null);
 
+
+  // Fetch gallery data without updating React state directly.
+  async function fetchGallery() {
+    const res = await api.get('/gallery');
+    return Array.isArray(res.data) ? res.data : [];
+  }
+
+  // Used when the visitor manually retries after an error.
   const loadGallery = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const res = await api.get('/gallery');
-      setImages(Array.isArray(res.data) ? res.data : []);
+      const data = await fetchGallery();
+      setImages(data);
     } catch (err) {
       setError(err.message || 'Failed to load gallery');
     } finally {
@@ -26,9 +35,32 @@ export default function PhotoAlbum() {
     }
   }, []);
 
+  // Initial gallery fetch.
   useEffect(() => {
-    loadGallery();
-  }, [loadGallery]);
+    let cancelled = false;
+
+    fetchGallery()
+      .then((data) => {
+        if (!cancelled) {
+          setImages(data);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load gallery');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
 
   // Lightbox state management
   const close = useCallback(() => {
