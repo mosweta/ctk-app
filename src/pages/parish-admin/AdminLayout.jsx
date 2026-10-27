@@ -45,7 +45,6 @@ const NAV_ITEMS = [
   { path: '/parish-admin/announcements', icon: Bell, label: 'Announcements' },
   { path: '/parish-admin/gallery', icon: ImageIcon, label: 'Gallery' },
   { path: '/parish-admin/groups', icon: Users, label: 'Groups & Jumuiyas' },
-  { path: '/parish-admin/settings', icon: Settings, label: 'Settings' },
   { path: '/parish-admin/staff', icon: Users, label: 'Staff' },
   { path: '/parish-admin/livestreams', icon: FaYoutube, label: 'Livestreams' },
 ];
