@@ -61,7 +61,9 @@ router.get('/staff', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.get('/events/:id', async (req, res, next) => {
+
+
+router.get('/events/:id', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('events')
@@ -71,11 +73,17 @@ router.get('/events/:id', async (req, res, next) => {
       .single();
 
     if (error || !data) throw new Error('Event not found');
+
     res.json({ success: true, data });
-  } catch (err) {
-    res.status(404).json({ success: false, message: 'Event not found' });
+  } catch {
+    res.status(404).json({
+      success: false,
+      message: 'Event not found',
+    });
   }
 });
+
+
 
 // Livestreams (public)
 

@@ -37,7 +37,7 @@ export function useApi(endpoint) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [endpoint]);
 
   return { data, loading, error, refetch: fetchData };
