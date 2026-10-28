@@ -201,9 +201,9 @@ export default function Header() {
             <img
               src={logo}
               alt=""
-              className="h-14 w-14 md:h-16 md:w-16 rounded-full
-                         transition-transform group-hover:scale-105
-                         dark:bg-white/10 dark:p-0.5"
+              className="h-14 w-14 md:h-16 md:w-16 rounded-full object-cover
+                        transition-transform group-hover:scale-105
+                        dark:bg-white/10 dark:p-0.5"
             />
             <span className="text-2xl md:text-3xl font-extrabold text-primary tracking-tight">
               CTK
@@ -396,7 +396,9 @@ export default function Header() {
                 <img
                   src={logo}
                   alt=""
-                  className="h-20 w-20 rounded-full border-4 border-white/20 mb-4"
+                  className="h-14 w-14 md:h-16 md:w-16 rounded-full object-cover
+                            transition-transform group-hover:scale-105
+                            dark:bg-white/10 dark:p-0.5"
                 />
                 <h3 id="mobile-nav-title" className="font-bold text-xl">
                   Christ the King
