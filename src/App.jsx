@@ -58,6 +58,7 @@ import Give from './pages/Give';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ScrollToTopOnNavigate from './components/ScrollToTopOnNavigate';
 
 // ---------------------------------------------------------------------
 // Lazy-loaded admin area
@@ -127,6 +128,7 @@ const Home = () => (
 const App = () => {
   return (
     <BrowserRouter>
+    <ScrollToTopOnNavigate />
       <ThemeProvider>
         <AuthProvider>
           <Suspense fallback={<RouteFallback />}>
