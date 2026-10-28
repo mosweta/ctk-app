@@ -95,11 +95,12 @@ export default function Footer() {
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-4">
             <img
-              src={logo}
-              alt=""
-              className="w-16 h-16 md:w-20 md:h-20 rounded-full
-                         border-2 border-white/30 shrink-0"
-            />
+                  src={logo}
+                  alt=""
+                  className="h-14 w-14 md:h-16 md:w-16 rounded-full object-cover
+                            transition-transform group-hover:scale-105
+                            dark:bg-white/10 dark:p-0.5"
+                />
             <div>
               <h3 className="text-white font-bold text-xl md:text-2xl leading-tight">
                 Christ the King
@@ -273,11 +274,11 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-white/10 bg-black/20">
         <div
-          className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8
-                     py-6 flex flex-col sm:flex-row justify-between
-                     items-center gap-4 text-xs text-white/60
-                     text-center sm:text-left"
-        >
+  className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8
+             py-6 flex flex-col sm:flex-row justify-between
+             items-center gap-4 text-xs text-white/80
+             text-center sm:text-left"
+            >
           <p>
             {year} Christ the King Catholic Church, Embakasi. All rights
             reserved.
@@ -302,9 +303,9 @@ export default function Footer() {
             </span>
 
             <Link
-              to="/parish-admin/login"
-              className="inline-flex items-center gap-1.5
-                         text-white/50 hover:text-accent
+                to="/parish-admin/login"
+                className="inline-flex items-center gap-1.5
+                          text-white/80 hover:text-accent
                          transition-colors
                          focus-visible:outline-none focus-visible:ring-2
                          focus-visible:ring-accent focus-visible:ring-offset-2

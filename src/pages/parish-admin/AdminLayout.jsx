@@ -164,10 +164,12 @@ export default function AdminLayout() {
         {/* Header */}
         <div className="flex items-center gap-3 p-4 border-b border-white/10">
           <img
-            src={logo}
-            alt=""
-            className="w-10 h-10 rounded-full border-2 border-white/30"
-          />
+              src={logo}
+              alt=""
+              className="h-14 w-14 md:h-16 md:w-16 rounded-full object-cover
+                        transition-transform group-hover:scale-105
+                        dark:bg-white/10 dark:p-0.5"
+            />
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm leading-tight truncate">
               Christ the King
