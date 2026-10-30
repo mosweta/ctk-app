@@ -47,8 +47,8 @@ const History = () => {
       },
       {
         src: ctkMassImg,
-        alt: 'Sunday Mass',
-        caption: 'Sunday Mass Celebration',
+        alt: 'SECAM Mass Celebration',
+        caption: 'SECAM Mass Celebration (Jan 2024)',
       },
       {
         src: groto,
