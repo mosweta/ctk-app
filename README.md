@@ -1,16 +1,79 @@
-# React + Vite
+# Christ the King Catholic Parish — Official Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, highly optimized, and secure full-stack web application built for Christ the King Catholic Parish in Embakasi, Nairobi. 
 
-Currently, two official plugins are available:
+**Live Site:** [christthekingembakasi.top](https://christthekingembakasi.top)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+**Lighthouse - desktop score:** <img width="721" height="91" alt="image" src="https://github.com/user-attachments/assets/eea68095-deba-4ec5-807f-b098a00b8b0a" />
 
-## React Compiler
+**Lighthouse - mobile score:** <img width="721" height="92" alt="image" src="https://github.com/user-attachments/assets/ccecffb2-e44b-4976-840e-d9b1af60179b" />
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
+## 🏆 Performance & Audits
+This project was built with security and accessibility as first-class citizens.
+*   **SEO:** 100/100 (Lighthouse)
+*   **Accessibility:** 100/100 (Lighthouse)
+*   **Best Practices:** 100/100 (Lighthouse)
+*   **Desktop Performance:** 96/100 (Lighthouse)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🏗️ Architecture
+The application is decoupled into three main layers to ensure speed, security, and scalability:
+1.  **Frontend (Client):** React + Vite, hosted on Cloudflare Workers. 
+2.  **Backend (API):** Node.js + Express, hosted on Render.
+3.  **Database & Auth:** Supabase (PostgreSQL).
+4.  **Email Delivery:** Resend.
+
+### Security First Approach
+Unlike standard AI-generated prototypes, this codebase was explicitly hardened:
+*   **Row Level Security (RLS):** The Supabase database is fully locked down. Public users can only `SELECT` published data. `INSERT`/`UPDATE`/`DELETE` operations are restricted to `authenticated` admins or the `service_role` backend.
+*   **Secure File Uploads:** Browsers are **never** allowed to upload directly to Supabase Storage. All images are sent via `FormData` to the Express backend, validated with `multer` (size & MIME type), and uploaded securely using the `service_role` key.
+*   **XSS Protection:** Rich text from the bulletin editor is sanitized on the backend using `sanitize-html` before hitting the database, and again on the frontend using `DOMPurify`.
+*   **Rate Limiting & CAPTCHA:** Public forms (Contact) are protected by `express-rate-limit` and Google reCAPTCHA v2.
+
+## 🚀 Key Features
+*   **Public Website:** Dynamic Mass times, Parish History, Clergy directory, Photo Gallery, and a full interactive Events Calendar.
+*   **Daily Readings:** Integrates with the Evangelizo API to serve the Catholic Mass readings of the day, cached in Supabase for 6 hours to prevent API rate limits.
+*   **Parish Bulletins:** A custom rich-text editor (Tiptap) that allows the parish secretary to draft structured weekly bulletins with complex mass animation tables. Includes bilingual support (English/Kiswahili).
+*   **Admin Dashboard:** A secure, authenticated portal for managing events, bulletins, staff, and livestreams without touching a single line of code.
+*   **Dark Mode:** Full theme support (Light/Dark/System) using semantic CSS variables and Tailwind CSS.
+
+## 💻 Tech Stack
+*   **Frontend:** React 19, Vite, Tailwind CSS v4, Framer Motion, Lucide Icons, Tiptap.
+*   **Backend:** Node.js, Express, Joi (validation), Multer (uploads), Resend (email).
+*   **Infrastructure:** Cloudflare, Render, Supabase.
+*   **Tooling:** ESLint, Prettier, Repomix.
+
+## 🛠️ Local Development
+
+### Prerequisites
+*   Node.js (v20+)
+*   A Supabase Project
+*   A Resend Account (for contact forms)
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/mosweta/ctk-app.git
+cd ctk-app
+```
+### 2. Setup the Backend
+```bash
+cd backend
+npm install
+cp .env.example .env
+# Fill in your Supabase keys, Resend API key, and reCAPTCHA secret in .env
+npm run dev
+```
+### 3. Setup the Frontend
+```bash
+# In a new terminal, from the root directory
+npm install
+cp .env.example .env
+# Fill in VITE_API_URL, VITE_SUPABASE_URL, etc.
+npm run dev
+```
+
+## 📦 Deployment
+- Frontend: Built via npm run build and deployed to Cloudflare Workers (npx wrangler deploy).
+
+- Backend: Automatically deploys to Render on push to the main branch.
+
