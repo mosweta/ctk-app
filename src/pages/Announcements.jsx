@@ -132,7 +132,7 @@ export default function Announcements() {
                           {/* Rich Text */}
                           {safeContent && (
                             <div 
-                              className="ql-editor-public prose max-w-none text-body prose-p:my-3 prose-ul:my-3 prose-ol:my-3 prose-li:my-1 break-words [overflow-wrap:anywhere]"
+                              className="ql-editor-public prose dark:prose-invert max-w-none text-body prose-p:my-3 prose-ul:my-3 prose-ol:my-3 prose-li:my-1 break-words [overflow-wrap:anywhere]"
                               dangerouslySetInnerHTML={{ __html: safeContent }} 
                             />
                           )}

@@ -712,5 +712,38 @@
 }
 .ql-editor-public strong {
   font-weight: 700;
-  color: #111827;
+  color: (--color-heading);;
+}
+
+/* ==========================================================================
+   TIPTAP RICH TEXT EDITOR STYLES
+   Forces bullets and numbers to display inside the Tiptap editor, 
+   since Tailwind's reset hides them by default.
+   ========================================================================== */
+
+.ProseMirror ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.ProseMirror li {
+  display: list-item !important; /* Forces the browser to render the bullet */
+  margin-bottom: 0.25rem !important;
+}
+
+.ProseMirror p {
+  margin-bottom: 0.5rem !important;
+}
+
+.ProseMirror p:last-child {
+  margin-bottom: 0 !important;
 }
