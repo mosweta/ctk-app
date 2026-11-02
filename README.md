@@ -8,6 +8,7 @@ A modern, highly optimized, and secure full-stack web application built for Chri
 
 **Lighthouse - mobile score:** <img width="721" height="92" alt="image" src="https://github.com/user-attachments/assets/ccecffb2-e44b-4976-840e-d9b1af60179b" />
 
+*Note: Mobile performance scores reflect a simulated slow 4G connection and budget device CPU. The site is fully optimized with WebP images and code-splitting to ensure fast delivery on all devices.*
 
 ## 🏆 Performance & Audits
 This project was built with security and accessibility as first-class citizens.
