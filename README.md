@@ -4,9 +4,10 @@ A modern, highly optimized, and secure full-stack web application built for Chri
 
 **Live Site:** [christthekingembakasi.top](https://christthekingembakasi.top)
 
-**Lighthouse - desktop score:** <img width="721" height="91" alt="image" src="https://github.com/user-attachments/assets/eea68095-deba-4ec5-807f-b098a00b8b0a" />
+**Lighthouse - desktop score:** <img width="721" height="79" alt="image" src="https://github.com/user-attachments/assets/89a8aad8-0213-4cb9-a122-f6131a6d80bb" />
 
-**Lighthouse - mobile score:** <img width="721" height="92" alt="image" src="https://github.com/user-attachments/assets/ccecffb2-e44b-4976-840e-d9b1af60179b" />
+
+**Lighthouse - mobile score:** <img width="721" height="79" alt="image" src="https://github.com/user-attachments/assets/ca8f5547-05fd-4469-988b-11ece3317186" />
 
 *Note: Mobile performance scores reflect a simulated slow 4G connection and budget device CPU. The site is fully optimized with WebP images and code-splitting to ensure fast delivery on all devices.*
 
@@ -15,7 +16,8 @@ This project was built with security and accessibility as first-class citizens.
 *   **SEO:** 100/100 (Lighthouse)
 *   **Accessibility:** 100/100 (Lighthouse)
 *   **Best Practices:** 100/100 (Lighthouse)
-*   **Desktop Performance:** 96/100 (Lighthouse)
+*   **Desktop Performance:** 97/100 (Lighthouse)
+*   **Mobile Performance:** 86/100 (Lighthouse)
 
 ## 🏗️ Architecture
 The application is decoupled into multiple layers to ensure speed, security, and scalability:
