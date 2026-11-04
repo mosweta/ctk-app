@@ -9,6 +9,8 @@
 import { supabaseAdmin } from '../lib/supabaseClient.js';
 import { AppError } from '../middleware/errorMiddleware.js';
 import sanitizeHtml from 'sanitize-html';
+import { clearCache } from '../middleware/cacheMiddleware.js'; // <-- ADDED THIS IMPORT
+
 // ---------------------------------------------------------------------
 // Audit Logging Helper
 // ---------------------------------------------------------------------
@@ -124,6 +126,7 @@ export const createEvent = async (req, res, next) => {
     if (error) throw error;
 
     await logAudit(req.user.id, 'create', 'event', data.id);
+    await clearCache('cache:/api/events*'); // <-- ADDED CACHE BUST
 
     res.status(201).json({ success: true, data });
   } catch (err) {
@@ -163,6 +166,7 @@ export const updateEvent = async (req, res, next) => {
     if (error || !data) throw new AppError('Event not found', 404);
 
     await logAudit(req.user.id, 'update', 'event', id);
+    await clearCache('cache:/api/events*'); // <-- ADDED CACHE BUST
 
     res.json({ success: true, data });
   } catch (err) {
@@ -178,6 +182,7 @@ export const deleteEvent = async (req, res, next) => {
     if (error) throw error;
 
     await logAudit(req.user.id, 'delete', 'event', id);
+    await clearCache('cache:/api/events*'); // <-- ADDED CACHE BUST
 
     res.json({ success: true, message: 'Event deleted' });
   } catch (err) {
@@ -233,6 +238,7 @@ export const createAnnouncement = async (req, res, next) => {
     if (error) throw error;
 
     await logAudit(req.user.id, 'create', 'announcement', data.id);
+    await clearCache('cache:/api/announcements*'); // <-- ADDED CACHE BUST
 
     res.status(201).json({ success: true, data });
   } catch (err) {
@@ -271,6 +277,7 @@ export const updateAnnouncement = async (req, res, next) => {
     if (error || !data) throw new AppError('Announcement not found', 404);
 
     await logAudit(req.user.id, 'update', 'announcement', id);
+    await clearCache('cache:/api/announcements*'); // <-- ADDED CACHE BUST
 
     res.json({ success: true, data });
   } catch (err) {
@@ -290,6 +297,7 @@ export const deleteAnnouncement = async (req, res, next) => {
     if (error) throw error;
 
     await logAudit(req.user.id, 'delete', 'announcement', id);
+    await clearCache('cache:/api/announcements*'); // <-- ADDED CACHE BUST
 
     res.json({ success: true, message: 'Announcement deleted' });
   } catch (err) {
@@ -339,6 +347,7 @@ export const createGalleryImage = async (req, res, next) => {
     if (error) throw error;
 
     await logAudit(req.user.id, 'create', 'gallery_image', data.id);
+    await clearCache('cache:/api/gallery*'); // <-- ADDED CACHE BUST
 
     // Return with URL
     const imageWithUrl = {
@@ -378,6 +387,7 @@ export const deleteGalleryImage = async (req, res, next) => {
     if (error) throw error;
 
     await logAudit(req.user.id, 'delete', 'gallery_image', id);
+    await clearCache('cache:/api/gallery*'); // <-- ADDED CACHE BUST
 
     res.json({ success: true, message: 'Image deleted' });
   } catch (err) {
@@ -434,7 +444,7 @@ export const createBulletin = async (req, res, next) => {
   try {
     const payload = {
       ...req.body,
-      sections: sanitizeSections(req.body.sections), // <-- Added sanitization
+      sections: sanitizeSections(req.body.sections),
       created_by: req.user.id,
     };
     if (payload.status === 'published') {
@@ -447,6 +457,7 @@ export const createBulletin = async (req, res, next) => {
       .single();
     if (error) throw error;
     await logAudit(req.user.id, 'create', 'bulletin', data.id);
+    await clearCache('cache:/api/bulletins*'); // <-- ADDED CACHE BUST
     res.status(201).json({ success: true, data });
   } catch (err) { next(err); }
 };
@@ -472,6 +483,7 @@ export const updateBulletin = async (req, res, next) => {
       .single();
     if (error || !data) throw new AppError('Bulletin not found', 404);
     await logAudit(req.user.id, 'update', 'bulletin', id);
+    await clearCache('cache:/api/bulletins*'); // <-- ADDED CACHE BUST
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
@@ -484,6 +496,7 @@ export const deleteBulletin = async (req, res, next) => {
       .eq('id', req.params.id);
     if (error) throw error;
     await logAudit(req.user.id, 'delete', 'bulletin', req.params.id);
+    await clearCache('cache:/api/bulletins*'); // <-- ADDED CACHE BUST
     res.json({ success: true, message: 'Bulletin deleted' });
   } catch (err) { next(err); }
 };
@@ -524,6 +537,7 @@ export const createGroup = async (req, res, next) => {
 
     if (error) throw error;
     await logAudit(req.user.id, 'create', 'group', data.id);
+    await clearCache('cache:/api/groups*'); // <-- ADDED CACHE BUST
     res.status(201).json({ success: true, data });
   } catch (err) {
     next(err);
@@ -549,6 +563,7 @@ export const updateGroup = async (req, res, next) => {
 
     if (error || !data) throw new AppError('Group not found', 404);
     await logAudit(req.user.id, 'update', 'group', id);
+    await clearCache('cache:/api/groups*'); // <-- ADDED CACHE BUST
     res.json({ success: true, data });
   } catch (err) {
     next(err);
@@ -561,14 +576,12 @@ export const deleteGroup = async (req, res, next) => {
     const { error } = await supabaseAdmin.from('groups').delete().eq('id', id);
     if (error) throw error;
     await logAudit(req.user.id, 'delete', 'group', id);
+    await clearCache('cache:/api/groups*'); // <-- ADDED CACHE BUST
     res.json({ success: true, message: 'Group deleted' });
   } catch (err) {
     next(err);
   }
 };
-
-
-
 
 // ---------------------------------------------------------------------
 // Staff
@@ -596,6 +609,7 @@ export const createStaff = async (req, res, next) => {
 
     if (error) throw error;
     await logAudit(req.user.id, 'create', 'staff', data.id);
+    await clearCache('cache:/api/staff*'); // <-- ADDED CACHE BUST
     res.status(201).json({ success: true, data });
   } catch (err) { next(err); }
 };
@@ -612,6 +626,7 @@ export const updateStaff = async (req, res, next) => {
 
     if (error || !data) throw new AppError('Staff member not found', 404);
     await logAudit(req.user.id, 'update', 'staff', id);
+    await clearCache('cache:/api/staff*'); // <-- ADDED CACHE BUST
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
@@ -625,6 +640,7 @@ export const deleteStaff = async (req, res, next) => {
 
     if (error) throw error;
     await logAudit(req.user.id, 'delete', 'staff', req.params.id);
+    await clearCache('cache:/api/staff*'); // <-- ADDED CACHE BUST
     res.json({ success: true, message: 'Staff member removed' });
   } catch (err) { next(err); }
 };
@@ -690,6 +706,7 @@ export const createLivestream = async (req, res, next) => {
     if (error) throw error;
 
     await logAudit(req.user.id, 'create', 'livestream', data.id);
+    await clearCache('cache:/api/livestreams*'); // <-- ADDED CACHE BUST
     res.status(201).json({ success: true, data });
   } catch (err) {
     next(err);
@@ -740,6 +757,7 @@ export const updateLivestream = async (req, res, next) => {
     if (error || !data) throw new AppError('Livestream not found', 404);
 
     await logAudit(req.user.id, 'update', 'livestream', id);
+    await clearCache('cache:/api/livestreams*'); // <-- ADDED CACHE BUST
     res.json({ success: true, data });
   } catch (err) {
     next(err);
@@ -757,6 +775,7 @@ export const deleteLivestream = async (req, res, next) => {
     if (error) throw error;
 
     await logAudit(req.user.id, 'delete', 'livestream', id);
+    await clearCache('cache:/api/livestreams*'); // <-- ADDED CACHE BUST
     res.json({ success: true, message: 'Livestream deleted' });
   } catch (err) {
     next(err);

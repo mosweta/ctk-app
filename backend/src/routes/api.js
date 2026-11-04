@@ -11,25 +11,30 @@ import * as formController from '../controllers/formController.js';
 import { formLimiter } from '../middleware/rateLimitMiddleware.js';
 import { validate } from '../middleware/validateMiddleware.js';
 import { contactSchema, registrationSchema } from '../validators/schemas.js';
+import { cache } from '../middleware/cacheMiddleware.js'; // <-- ADDED THIS IMPORT
 
 const router = express.Router();
 
-// ---- Reads ----------------------------------------------------------
-router.get('/events', publicController.getEvents);
-router.get('/announcements', publicController.getAnnouncements);
-router.get('/ministries', publicController.getMinistries);
-router.get('/groups', publicController.getGroups);
-router.get('/parish-settings', publicController.getParishSettings);
-router.get('/gallery', publicController.getGallery);
-router.get('/readings/today', publicController.getReadings);
-router.get('/readings/:date', publicController.getReadings);
+// ---- Reads (Cached for 6 hours) -------------------------------------
+// 21600 seconds = 6 hours
+router.get('/events', cache(21600), publicController.getEvents);
+router.get('/announcements', cache(21600), publicController.getAnnouncements);
+router.get('/ministries', cache(21600), publicController.getMinistries);
+router.get('/groups', cache(21600), publicController.getGroups);
+router.get('/parish-settings', cache(21600), publicController.getParishSettings);
+router.get('/gallery', cache(21600), publicController.getGallery);
+
+// Readings are cached for 12 hours (43200 seconds) since they change at midnight
+router.get('/readings/today', cache(43200), publicController.getReadings);
+router.get('/readings/:date', cache(43200), publicController.getReadings);
 
 
 // ---- Writes (public forms) -----------------------------------------
 router.post('/contact', formLimiter, validate(contactSchema), formController.submitContact);
 router.post('/register', formLimiter, validate(registrationSchema), formController.submitRegistration);
 
-router.get('/bulletins', async (req, res, next) => {
+// ---- Inline Reads (Cached) -----------------------------------------
+router.get('/bulletins', cache(21600), async (req, res, next) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('parish_bulletins')
@@ -41,6 +46,7 @@ router.get('/bulletins', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Leave specific slugs uncached
 router.get('/groups/:slug', async (req, res, next) => {
   try {
     const { data, error } = await supabaseAdmin.from('groups').select('*').eq('slug', req.params.slug).single();
@@ -49,7 +55,7 @@ router.get('/groups/:slug', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.get('/staff', async (req, res, next) => {
+router.get('/staff', cache(21600), async (req, res, next) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('staff_members')
@@ -61,8 +67,7 @@ router.get('/staff', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-
-
+// Leave specific event IDs uncached
 router.get('/events/:id', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -83,11 +88,8 @@ router.get('/events/:id', async (req, res) => {
   }
 });
 
-
-
 // Livestreams (public)
-
-router.get('/livestreams', async (req, res) => {
+router.get('/livestreams', cache(21600), async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('livestreams')
@@ -106,6 +108,5 @@ router.get('/livestreams', async (req, res) => {
     });
   }
 });
-
 
 export default router;
