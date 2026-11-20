@@ -400,7 +400,7 @@ export default function Header() {
                             transition-transform group-hover:scale-105
                             dark:bg-white/10 dark:p-0.5"
                 />
-                <h3 id="mobile-nav-title" className="font-bold text-xl">
+                <h3 id="mobile-nav-title" className="font-bold text-xl text-white">
                   Christ the King
                 </h3>
                 <p className="text-sm text-white/70">Catholic Parish</p>

@@ -84,7 +84,7 @@ const SACRAMENTS = [
     requirements: [
       'At least one parent must be a practicing Catholic',
       'Godparents must be confirmed Catholics over 16 leading a life in harmony with the faith and not the parent of the child',
-      'Pre-baptism course completion certificate',
+      'Have attended pre-baptism preparation classes',
       "Child's birth certificate",
       'For more information, contact the parish office or refer to the Archdiocese of Nairobi pastoral guidelines',
     ],
@@ -112,7 +112,7 @@ const SACRAMENTS = [
     ],
     requirements: [
       'Have a baptism card',
-      'First Communion preparation course',
+      'Catechism classes completed',
       'Age 9 or older with not less than one and a half years of instruction and scrutiny before reception',
       'Regular Mass attendance',
       'Proper understanding of the Eucharist',
@@ -136,7 +136,7 @@ const SACRAMENTS = [
       'By the sacrament of Confirmation, the baptized are more perfectly bound to the Church and are enriched with a special strength of the Holy Spirit. Hence they are, as true witnesses of Christ, more strictly obliged to spread and defend the faith by word and deed.',
     howTo: [
       'Be at least 10 years of age and at least 1 year of instruction',
-      'Complete Confirmation preparation program',
+      'Complete Confirmation preparation classes',
       'Choose a sponsor (practicing Catholic) who is present and committed to the faith.',
       'Attend regular classes and retreats',
       "Choose a Confirmation name (saint's name)",

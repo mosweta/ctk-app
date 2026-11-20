@@ -471,3 +471,12 @@
     transition: none;
   }
 }
+/* Ensure the carousel frame has a good height */
+.history-slider__frame {
+  aspect-ratio: 16 / 9;
+}
+
+/* Ensure the timeline content doesn't overflow on mobile */
+.history-timeline__content {
+  min-width: 0; 
+}

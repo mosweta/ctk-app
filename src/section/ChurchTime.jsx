@@ -74,13 +74,13 @@ const SERVICES = {
     label: 'Adoration',
     panelTitle: 'Adoration Times',
     Icon: FiHeart,
-    days: [{ day: 'Last Thursday', times: ['7:00 PM - 8:30 PM'] }],
+    days: [{ day: 'Thursday (Once a month)', times: ['7:00 PM - 8:30 PM'] }],
   },
   rosary: {
     label: 'Rosary',
     panelTitle: 'Rosary Times',
     Icon: Cross,
-    days: [{ day: 'Monday - Saturday', times: ['6:25 AM - 7:00 AM'] }],
+    days: [{ day: 'Monday - Saturday', times: ['6:25 AM - 7:00 AM (CTK)'] }],
   },
 };
 

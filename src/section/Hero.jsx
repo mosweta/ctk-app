@@ -49,7 +49,7 @@ const SLIDES = [
       'Join our vibrant community with programs for children, youth, and adults.',
     primary: { label: 'Our Ministries', to: '/get-involved', icon: FiCalendar },
     secondary: { label: 'Get Involved', to: '/get-involved', icon: FiPlay },
-    img: { desktop: cmaDesktop, mobile: cmaMobile },
+    img: { desktop: bishopsDesktop, mobile: bishopsMobile },
   },
   {
     id: 4,
@@ -59,7 +59,7 @@ const SLIDES = [
       'Discover a place to belong. Join one of our Small Christian Communities, choirs, or ministries today.',
     primary: { label: 'Find Your Group', to: '/get-involved', icon: FiCalendar },
     secondary: { label: 'View Gallery', to: '/gallery', icon: FiPlay },
-    img: { desktop: cmaDesktop, mobile: cmaMobile }, // Use the CMA community image
+    img: { desktop: bishopsDesktop, mobile: bishopsMobile }, // Use the CMA community image
   },
 ];
 

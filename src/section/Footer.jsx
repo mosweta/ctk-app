@@ -7,7 +7,8 @@
  *   - Constrained to max-w-7xl to match the header width.
  *   - Three-column grid with an asymmetric ratio on desktop.
  *   - Uses bg-base (deep green) so it stays distinct in both themes.
- *   - Mass Hours lists explicit times for both CTK and SJTE.
+ *   - Contact block lists address, phone, email, and the parish
+ *     office day. Mass Hours lists the CTK and SJTE schedules.
  *   - Bottom bar includes a discreet Admin Login link alongside the
  *     copyright and the "Made with love" line.
  *
@@ -29,6 +30,7 @@ import {
   FaHeart,
   FaChurch,
   FaUserShield,
+  FaBriefcase,
 } from 'react-icons/fa';
 import logo from '../assets/logoctk.webp';
 
@@ -42,12 +44,7 @@ const QUICK_LINKS = [
 ];
 
 const SOCIAL = [
-  {
-    icon: FaFacebook,
-    url: 'https://www.facebook.com/groups/44947225325/',
-    label: 'Facebook',
-  },
-  {
+{
     icon: FaInstagram,
     url: 'https://www.instagram.com/explore/locations/363520429/christ-the-king-catholic-church-embakasi/',
     label: 'Instagram',
@@ -95,12 +92,11 @@ export default function Footer() {
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-4">
             <img
-                  src={logo}
-                  alt=""
-                  className="h-14 w-14 md:h-16 md:w-16 rounded-full object-cover
-                            transition-transform group-hover:scale-105
-                            dark:bg-white/10 dark:p-0.5"
-                />
+              src={logo}
+              alt=""
+              className="h-14 w-14 md:h-16 md:w-16 rounded-full object-cover
+                         dark:bg-white/10 dark:p-0.5"
+            />
             <div>
               <h3 className="text-white font-bold text-xl md:text-2xl leading-tight">
                 Christ the King
@@ -111,6 +107,7 @@ export default function Footer() {
             </div>
           </div>
 
+          {/* Contact block: address, phone, email, office hours */}
           <div className="flex flex-col gap-4">
             <FooterContact icon={FaMapMarkerAlt}>
               Embakasi, Nairobi, Kenya
@@ -123,6 +120,14 @@ export default function Footer() {
               href="mailto:ctkcatholicparishemba@gmail.com"
             >
               ctkcatholicparishemba@gmail.com
+            </FooterContact>
+            <FooterContact icon={FaBriefcase}>
+              <span className="block font-semibold text-white">
+                Parish Office Day
+              </span>
+              <span className="block text-white/80">
+                Wednesday: 8:00 AM – 4:00 PM
+              </span>
             </FooterContact>
           </div>
 
@@ -266,7 +271,23 @@ export default function Footer() {
                        focus-visible:ring-white focus-visible:ring-offset-2
                        focus-visible:ring-offset-base"
           >
-            Get Directions
+            Get Directions to CTK
+            <FaMapMarkerAlt size={16} aria-hidden="true" />
+          </a>
+          <a
+            href="https://maps.app.goo.gl/fNaKSv7kSuwgqSveA"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center w-full gap-2
+                       text-sm font-semibold text-white
+                       border border-white/30 rounded-lg px-4 py-3
+                       hover:bg-white hover:text-base transition-colors
+                       focus-visible:outline-none focus-visible:ring-2
+                       focus-visible:ring-white focus-visible:ring-offset-2
+                       focus-visible:ring-offset-base"
+          >
+            Get Directions to SJTE
+            <FaMapMarkerAlt size={16} aria-hidden="true" />
           </a>
         </div>
       </div>
@@ -274,13 +295,13 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-white/10 bg-black/20">
         <div
-  className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8
-             py-6 flex flex-col sm:flex-row justify-between
-             items-center gap-4 text-xs text-white/80
-             text-center sm:text-left"
-            >
+          className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8
+                     py-6 flex flex-col sm:flex-row justify-between
+                     items-center gap-4 text-xs text-white/80
+                     text-center sm:text-left"
+        >
           <p>
-            {year} Christ the King Catholic Church, Embakasi. All rights
+            &copy; {year} Christ the King Catholic Church, Embakasi. All rights
             reserved.
           </p>
 
@@ -303,9 +324,9 @@ export default function Footer() {
             </span>
 
             <Link
-                to="/parish-admin/login"
-                className="inline-flex items-center gap-1.5
-                          text-white/80 hover:text-accent
+              to="/parish-admin/login"
+              className="inline-flex items-center gap-1.5
+                         text-white/80 hover:text-accent
                          transition-colors
                          focus-visible:outline-none focus-visible:ring-2
                          focus-visible:ring-accent focus-visible:ring-offset-2
